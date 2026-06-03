@@ -82,3 +82,10 @@ També pots importar currículum propi des de la mateixa PWA amb JSON:
 ## Avís important
 
 Aquesta versió inclou una base curricular inicial editable per fer la PWA funcional. No substitueix la documentació oficial ni la programació del centre. Cal revisar i completar competències, criteris i sabers amb les fonts oficials vigents i amb els acords del departament didàctic.
+
+
+## Versió ampliada sense dependència de carpeta `data`
+
+Aquesta versió carrega `curriculum-data.js` des de l'arrel del repositori, cosa que facilita pujar-la des del mòbil. També es manté una còpia dins `data/` per compatibilitat.
+
+La base curricular és editable i ampliada, però no substitueix la consulta del currículum oficial vigent.
