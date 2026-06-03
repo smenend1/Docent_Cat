@@ -1,91 +1,42 @@
-# DocentCat PWA
+# DocentCat v6 · Pas 1 cap a l'excel·lència
 
-PWA estàtica per a docents de secundària a Catalunya.
+PWA estàtica per a GitHub Pages. No necessita backend ni compilació.
 
-## Novetats d'aquesta versió
+## Novetats v6
 
-- Desplegable d'etapa, curs i matèria.
-- Desplegables múltiples de competències específiques, criteris d'avaluació i sabers.
-- Plantilles útils reutilitzables.
-- Importació de currículum propi en JSON.
-- Generació de SA, sessions, fitxes, rúbriques, feedback i plantilles.
-- Funcionament offline amb Service Worker.
-- Sense backend i preparada per GitHub Pages.
+- Botó **Paquet complet**: genera SA, sessions, fitxa, rúbrica, feedback i plantilla en un sol HTML.
+- Exportació **HTML**, **Word (.doc)**, **TXT** i impressió/PDF des del navegador.
+- Fitxes més específiques quan la consigna indica quantitats i tipus d'exercicis.
+- Millor interpretació de consignes com: `5 exercicis de factorització, 5 amb fórmula general, 2 problemes contextualitzats`.
+- Plantilles editables i sortides modificables dins l'app.
+- Service worker actualitzat per evitar memòria cau antiga.
 
-## Publicació amb GitHub Pages
+## Instal·lació a GitHub Pages
 
-1. Crea un repositori a GitHub, per exemple `docentcat-pwa`.
-2. Puja tots els fitxers d'aquest ZIP a l'arrel del repositori.
-3. Ves a **Settings > Pages**.
-4. A **Source**, tria **Deploy from a branch**.
-5. Selecciona la branca `main` i la carpeta `/root`.
-6. Desa.
-
-La URL serà semblant a:
+1. Puja tots els fitxers a l'arrel del repositori.
+2. Ves a `Settings > Pages`.
+3. Tria `Deploy from a branch`, branca `main`, carpeta `/root`.
+4. Obre la web amb `?v=6` per evitar memòria cau:
 
 ```text
-https://el-teu-usuari.github.io/docentcat-pwa/
+https://el-teu-usuari.github.io/DocentCat/?v=6
 ```
 
-## Prova local
-
-```bash
-python3 -m http.server 8080
-```
-
-Obre:
+## Estructura mínima
 
 ```text
-http://localhost:8080
-```
-
-## Editar o completar el currículum
-
-La base inicial és a:
-
-```text
+index.html
+styles.css
+app.js
+manifest.webmanifest
+service-worker.js
+curriculum-data.js
 data/curriculum-data.js
+icons/icon-192.png
+icons/icon-512.png
+.nojekyll
 ```
 
-Estructura:
+## Nota honesta
 
-```js
-window.DOCENTCAT_CURRICULUM = {
-  "ESO": {
-    "1r ESO": {
-      "Matemàtiques": {
-        ce: ["..."],
-        ca: ["..."],
-        sabers: ["..."]
-      }
-    }
-  }
-};
-```
-
-També pots importar currículum propi des de la mateixa PWA amb JSON:
-
-```json
-{
-  "ESO": {
-    "1r ESO": {
-      "Nova matèria": {
-        "ce": ["CE1..."],
-        "ca": ["CA1.1..."],
-        "sabers": ["Saber 1..."]
-      }
-    }
-  }
-}
-```
-
-## Avís important
-
-Aquesta versió inclou una base curricular inicial editable per fer la PWA funcional. No substitueix la documentació oficial ni la programació del centre. Cal revisar i completar competències, criteris i sabers amb les fonts oficials vigents i amb els acords del departament didàctic.
-
-
-## Versió ampliada sense dependència de carpeta `data`
-
-Aquesta versió carrega `curriculum-data.js` des de l'arrel del repositori, cosa que facilita pujar-la des del mòbil. També es manté una còpia dins `data/` per compatibilitat.
-
-La base curricular és editable i ampliada, però no substitueix la consulta del currículum oficial vigent.
+La base curricular inclosa és operativa i editable, però encara no és una transcripció oficial exhaustiva i revisada matèria per matèria. El següent pas és crear una versió STEM amb currículum complet i verificat per Matemàtiques, Matemàtiques A/B, Tecnologia i Digitalització, Tecnologia, Digitalització, Biologia i Geologia, Física i Química.

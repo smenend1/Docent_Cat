@@ -1,5 +1,5 @@
 const $ = (id) => document.getElementById(id);
-const storeKey = 'docentcat-pwa-v5-editable-templates';
+const storeKey = 'docentcat-pwa-v6-excellence-step1';
 const fields = ['stage','subject','level','templateType','topic','taskDescription','duration','groupProfile','language','saProduct','saContext','saMethod','saAssessment','sessionCount','sessionMinutes','sessionFocus','worksheetType','worksheetLevel','activityCount','rubricTask','rubricScale','rubricCriteria','studentWork','improvementGoal','feedbackTone','feedbackDetail','customCurriculum'];
 const multiFields = ['ceSelect','caSelect','sabersSelect'];
 const outputs = {};
@@ -15,6 +15,7 @@ class OutputCard extends HTMLElement {
     this.querySelector('.copyBtn').onclick = () => copyText(outputs[key].textContent);
     this.querySelector('.downloadBtn').onclick = () => downloadText(`${key}-${dateSlug()}.txt`, outputs[key].textContent);
     this.querySelector('.downloadHtmlBtn').onclick = () => downloadHtml(`${key}-${dateSlug()}.html`, outputs[key].textContent, key.toUpperCase());
+    this.querySelector('.downloadDocBtn').onclick = () => downloadDoc(`${key}-${dateSlug()}.doc`, outputs[key].textContent, key.toUpperCase());
     this.querySelector('.printBtn').onclick = () => printDocument(outputs[key].textContent, key.toUpperCase());
     outputs[key].addEventListener('input', save);
   }
@@ -82,7 +83,80 @@ function requestedCount(c, fallback){
   const m = (c.descripcio || '').match(/(\d+)\s*(exercicis|activitats|problemes|preguntes|tasques)/i);
   return m ? Math.max(1, Math.min(30, Number(m[1]))) : fallback;
 }
-function exerciseItems(c, count){
+
+function parseRequestedBundles(c){
+  const txt = (c.descripcio || '').toLowerCase();
+  const chunks = [];
+  const patterns = [
+    [/([0-9]+)\s+(?:exercicis?|activitats?)\s+(?:de|d\')\s+([^,.\n;]+)/g, 'exercicis'],
+    [/([0-9]+)\s+(problemes?)\s+([^,.\n;]*)/g, 'problemes'],
+    [/([0-9]+)\s+(preguntes?)\s+([^,.\n;]*)/g, 'preguntes']
+  ];
+  for(const [re,type] of patterns){
+    let m; while((m = re.exec(txt))){
+      chunks.push({count: Math.max(1, Math.min(15, Number(m[1]))), type, focus: (m[2] || m[3] || '').trim()});
+    }
+  }
+  return chunks.slice(0,8);
+}
+function mathExerciseByFocus(c, focus, index){
+  const t = `${focus} ${c.tema} ${c.descripcio}`.toLowerCase();
+  const n = index + 1;
+  if(/factor|factoritz/.test(t)){
+    const a = [1,1,2,1,3][index%5], b = [5,-3,7,-8,2][index%5], d = [6,-10,3,12,-5][index%5];
+    return `Factoritza i resol l'equació ${a===1?'':a}x² ${b>=0?'+':'-'} ${Math.abs(b)}x ${d>=0?'+':'-'} ${Math.abs(d)} = 0. Indica arrels, comprovació i error habitual.`;
+  }
+  if(/f[oó]rmula|general|quadr/.test(t)){
+    const A = [1,2,1,3,2][index%5], B = [4,-5,6,-7,3][index%5], C = [-12,2,5,-2,-9][index%5];
+    return `Resol amb la fórmula general: ${A}x² ${B>=0?'+':'-'} ${Math.abs(B)}x ${C>=0?'+':'-'} ${Math.abs(C)} = 0. Escriu discriminant, substitució, resultat i interpretació.`;
+  }
+  if(/v[eè]rtex|vertex|parabol|funci/.test(t)){
+    const A=[1,-1,2,-2,0.5][index%5], B=[-4,6,-8,4,-3][index%5], C=[3,-5,1,6,2][index%5];
+    return `Estudia la funció f(x) = ${A}x² ${B>=0?'+':'-'} ${Math.abs(B)}x ${C>=0?'+':'-'} ${Math.abs(C)}: vèrtex, eix de simetria, punts de tall i esbós de la gràfica.`;
+  }
+  if(/context|problema|aplic/.test(t)){
+    return `Problema contextualitzat ${n}: en una situació del centre relacionada amb ${c.tema.toLowerCase()}, una magnitud segueix un model quadràtic o lineal. Proposa dades coherents, escriu el model, resol la pregunta i interpreta si la resposta té sentit.`;
+  }
+  if(/percent|propor|escala/.test(t)){
+    return `Resol una situació de proporcionalitat o percentatges vinculada a ${c.tema.toLowerCase()}: dades, operació, resultat, comprovació i frase final.`;
+  }
+  return null;
+}
+function scienceExerciseByFocus(c, focus, index){
+  const t = `${focus} ${c.tema} ${c.descripcio}`.toLowerCase();
+  if(/laboratori|experiment|indag/.test(t)) return `Dissenya una indagació sobre ${c.tema.toLowerCase()}: pregunta investigable, hipòtesi, variables, material, procediment segur, taula de dades i conclusió esperada.`;
+  if(/c[aà]lcul|problema|unitat|força|energia|moviment|mol|concentr/.test(t)) return `Problema numèric sobre ${c.tema.toLowerCase()}: identifica dades, magnituds, unitats, fórmula o relació, càlcul i interpretació del resultat.`;
+  if(/gr[aà]fic|dades|taula/.test(t)) return `Interpreta una taula o gràfic sobre ${c.tema.toLowerCase()}: tendència, variable dependent/independent, anomalia i conclusió científica.`;
+  return null;
+}
+function technologyExerciseByFocus(c, focus, index){
+  const t = `${focus} ${c.tema} ${c.descripcio}`.toLowerCase();
+  if(/pseudocodi|algor|program/.test(t)) return `Escriu pseudocodi per a una part de ${c.tema.toLowerCase()}: entrada, procés, sortida, condició, prova amb dades i possible error.`;
+  if(/prototip|disseny|projecte/.test(t)) return `Dissenya un prototip relacionat amb ${c.tema.toLowerCase()}: necessitat, requisits, croquis, materials/eines, passos, proves i millora.`;
+  if(/app|web|pwa|digital/.test(t)) return `Defineix una funcionalitat digital per a ${c.tema.toLowerCase()}: usuari destinatari, pantalla principal, dades necessàries, interacció i criteris d'usabilitat.`;
+  return null;
+}
+function bundledExercises(c, count){
+  const bundles = parseRequestedBundles(c);
+  if(!bundles.length) return null;
+  const family = subjectFamily(c);
+  const list = [];
+  let idx = 0;
+  bundles.forEach(bundle => {
+    list.push(`Bloc: ${bundle.count} ${bundle.type} ${bundle.focus ? 'sobre ' + bundle.focus : ''}`);
+    for(let i=0; i<bundle.count; i++){
+      let item = null;
+      if(family === 'math') item = mathExerciseByFocus(c, bundle.focus, idx);
+      if(family === 'fisquim' || family === 'bio') item = scienceExerciseByFocus(c, bundle.focus, idx);
+      if(family === 'tech') item = technologyExerciseByFocus(c, bundle.focus, idx);
+      if(!item) item = exerciseItemsBasic(c, 1, idx)[0].replace(/^\d+\.\s*/, '');
+      idx++;
+      list.push(`${idx}. ${item}`);
+    }
+  });
+  return list.slice(0, Math.max(1, count) + bundles.length + 20);
+}
+function exerciseItemsBasic(c, count, offset=0){
   const family=subjectFamily(c), kws=keywordList(c), tema=c.tema || 'el tema';
   const saber = i => c.sabers[i % Math.max(1,c.sabers.length)] || tema;
   const k = i => kws[i % Math.max(1,kws.length)] || tema.toLowerCase();
@@ -132,6 +206,9 @@ function exerciseItems(c, count){
     }
   }
   return list;
+}
+function exerciseItems(c, count){
+  return bundledExercises(c, count) || exerciseItemsBasic(c, count, 0);
 }
 function solutionGuide(c, count){
   const family=subjectFamily(c);
@@ -287,6 +364,7 @@ function documentHtml(text,title='DocentCat'){
 }
 function printDocument(text,title){ const w=window.open('', '_blank'); if(!w){toast('El navegador ha bloquejat la finestra d\'impressió'); return;} w.document.open(); w.document.write(documentHtml(text,title)); w.document.close(); w.focus(); setTimeout(()=>w.print(),300); }
 function downloadHtml(filename,text,title){ const blob=new Blob([documentHtml(text,title)],{type:'text/html;charset=utf-8'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=filename; a.click(); URL.revokeObjectURL(a.href); }
+function downloadDoc(filename,text,title){ const blob=new Blob([documentHtml(text,title)],{type:'application/msword;charset=utf-8'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=filename; a.click(); URL.revokeObjectURL(a.href); }
 function save(){ const data={fields:{}, multi:{}, outputs:{}, custom: null}; fields.forEach(f=>{if($(f)) data.fields[f]=$(f).value}); multiFields.forEach(f=>{if($(f)) data.multi[f]=selectedValues(f)}); Object.keys(outputs).forEach(k=>data.outputs[k]=outputs[k].textContent); localStorage.setItem(storeKey,JSON.stringify(data)); toast('Desat al navegador'); }
 function load(){ try{ const data=JSON.parse(localStorage.getItem(storeKey)||'{}'); if(data.fields?.customCurriculum){ try{ curriculum = mergeDeep(curriculum, JSON.parse(data.fields.customCurriculum)); }catch{} } populateContextSelectors(); Object.entries(data.fields||{}).forEach(([k,v])=>{if($(k)) $(k).value=v}); populateContextSelectors(); Object.entries(data.multi||{}).forEach(([k,values])=>{if($(k)){ const set=new Set(values); Array.from($(k).options).forEach(o=>o.selected=set.has(o.value)); }}); queueMicrotask(()=>Object.entries(data.outputs||{}).forEach(([k,v])=>{if(outputs[k]) outputs[k].textContent=v})); }catch{ populateContextSelectors(); } }
 function generate(key){ const text = clean(generators[key]()); outputs[key].textContent=text; save(); }
@@ -302,6 +380,7 @@ for(const btn of document.querySelectorAll('[data-generate]')) btn.onclick=()=>g
 $('saveContextBtn').onclick=save; $('selectCoreBtn').onclick=selectCore; $('copyCurriculumBtn').onclick=copyCurriculum; $('importCurriculumBtn').onclick=importCustomCurriculum;
 $('clearBtn').onclick=()=>{ if(confirm('Vols esborrar les dades locals de DocentCat?')){ localStorage.removeItem(storeKey); location.reload(); }};
 $('exportAllBtn').onclick=()=>{ const all=Object.keys(outputs).map(k=>`# ${k.toUpperCase()}\n\n${outputs[k].textContent}`).join('\n\n---\n\n'); downloadHtml(`docentcat-export-${dateSlug()}.html`, all, 'Exportació DocentCat'); };
+$('fullPackBtn').onclick=()=>{ ['sa','sessions','worksheets','rubrics','feedback','templates'].forEach(k=>{ if(outputs[k]) outputs[k].textContent = clean(generators[k]()); }); save(); const all=Object.keys(outputs).map(k=>`# ${k.toUpperCase()}\n\n${outputs[k].textContent}`).join('\n\n---\n\n'); downloadHtml(`docentcat-paquet-complet-${dateSlug()}.html`, all, 'Paquet complet DocentCat'); };
 fields.forEach(f=>$(f)?.addEventListener('change',()=>{ if(['stage','level','subject'].includes(f)){ populateContextSelectors(); } if(f === 'templateType') renderTemplatePreview(); save(); }));
 multiFields.forEach(f=>$(f)?.addEventListener('change', save));
 let deferredPrompt; window.addEventListener('beforeinstallprompt', e=>{ e.preventDefault(); deferredPrompt=e; $('installBtn').hidden=false; });

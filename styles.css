@@ -9,3 +9,5 @@ details summary{cursor:pointer; font-weight:700; color:#253b80;}
 .template-card strong{display:block; color:#253b80; margin-bottom:.4rem;}
 .template-card span{display:block; color:#64748b; font-size:.86rem; line-height:1.35;}
 .template-card.selected{outline:3px solid rgba(37,59,128,.22); border-color:#253b80;}
+
+.version-badge{font-size:.9rem;background:#eef1ff;color:#253b80;border:1px solid #c8d2ff;border-radius:999px;padding:.15rem .45rem;vertical-align:middle;}
