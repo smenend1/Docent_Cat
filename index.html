@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="theme-color" content="#253b80" />
-  <title>DocentCat v6 · Assistent docent PWA</title>
+  <title>DocentCat v7 · Assistent docent PWA</title>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="stylesheet" href="styles.css" />
 </head>
@@ -12,8 +12,8 @@
   <header class="app-header">
     <div>
       <p class="eyebrow">PWA per a docents de secundària · Catalunya</p>
-      <h1>DocentCat <span class="version-badge">v6</span></h1>
-      <p class="subtitle">Crea situacions d’aprenentatge, sessions, fitxes, rúbriques i feedback. Versió enfocada a documents més professionals i exercicis més específics.</p>
+      <h1>DocentCat <span class="version-badge">v7</span></h1>
+      <p class="subtitle">Crea situacions d’aprenentatge, sessions, fitxes, rúbriques i feedback. Versió amb el flux de generació més clar: dades comunes al menú lateral i paràmetres específics al centre de cada mòdul.</p>
     </div>
     <div class="header-actions">
       <button id="installBtn" class="ghost" hidden>Instal·la</button>
@@ -25,7 +25,8 @@
 
   <main class="layout">
     <aside class="panel context-panel">
-      <h2>Context curricular</h2>
+      <h2>Dades comunes</h2>
+      <div class="guide-card side-guide"><strong>Per a què serveix aquesta columna?</strong><p>Aquí poses la informació que es reaprofita en tots els generadors: curs, matèria, tema, consigna global, grup i currículum. Si canvies aquests camps, afectarà SA, sessions, fitxes, rúbriques, feedback i plantilles.</p></div>
       <label>Etapa
         <select id="stage"><option value="ESO">ESO</option></select>
       </label>
@@ -38,12 +39,12 @@
       <label>Plantilla de treball
         <select id="templateType"></select>
       </label>
-      <label>Tema o repte <input id="topic" placeholder="Ex. Energia sostenible al barri" /></label>
-      <label>Consigna detallada / què vols que generi exactament
-        <textarea id="taskDescription" rows="5" placeholder="Ex. Fitxa de 4t ESO sobre equacions de segon grau: 5 exercicis de factorització, 5 amb fórmula general, 2 problemes contextualitzats i solucionari pas a pas."></textarea>
+      <label><span>Tema o repte general</span><small>Idea base que compartirà tota la generació.</small><input id="topic" placeholder="Ex. Energia sostenible al barri" /></label>
+      <label><span>Consigna global de generació</span><small>Explica què vols que es tingui en compte a tots els mòduls. Per a detalls només de SA, usa els camps del centre.</small>
+        <textarea id="taskDescription" rows="5" placeholder="Ex. Treballar equacions de segon grau amb activitats graduades, problemes contextualitzats i solucionari pas a pas."></textarea>
       </label>
-      <label>Durada <input id="duration" placeholder="Ex. 8 sessions de 55 min" /></label>
-      <label>Perfil del grup <textarea id="groupProfile" rows="4" placeholder="Ex. grup heterogeni, 2 alumnes nouvinguts, nivell lector desigual..."></textarea></label>
+      <label><span>Durada global</span><small>Referència general. Les sessions també tenen el seu propi nombre i minuts al mòdul corresponent.</small><input id="duration" placeholder="Ex. 8 sessions de 55 min" /></label>
+      <label><span>Perfil del grup</span><small>Serveix per ajustar suports, ritme, adaptacions i tipus d’activitat.</small><textarea id="groupProfile" rows="4" placeholder="Ex. grup heterogeni, 2 alumnes nouvinguts, nivell lector desigual..."></textarea></label>
       <label>Competències específiques
         <select id="ceSelect" multiple size="5"></select>
       </label>
@@ -71,6 +72,14 @@
     </aside>
 
     <section class="workspace">
+      <div class="workflow-guide panel">
+        <h2>Com s’omple?</h2>
+        <div class="workflow-steps">
+          <div><strong>1. Menú lateral</strong><span>Dades comunes: curs, matèria, tema, grup, consigna global i currículum.</span></div>
+          <div><strong>2. Centre de pantalla</strong><span>Dades específiques del mòdul actiu: producte final de la SA, nombre de sessions, tipus de fitxa, escala de rúbrica...</span></div>
+          <div><strong>3. Botó genera</strong><span>El document combina automàticament la informació lateral amb els camps del mòdul.</span></div>
+        </div>
+      </div>
       <nav class="tabs" aria-label="Mòduls">
         <button class="tab active" data-tab="sa">1. SA</button>
         <button class="tab" data-tab="sessions">2. Sessions</button>
@@ -82,13 +91,14 @@
 
       <section id="sa" class="module active panel">
         <div class="module-head"><div><h2>Generador de Situació d’Aprenentatge</h2><p>Model orientat al currículum competencial de Catalunya.</p></div><button data-generate="sa" class="primary">Genera SA</button></div>
+        <div class="module-guide"><strong>Aquests camps només afecten la SA.</strong><span>El tema, la consigna global, el grup i el currículum venen del menú lateral. Aquí concretes com vols que sigui la situació d’aprenentatge: producte final, context real, metodologia i avaluació.</span></div>
         <div class="grid two">
-          <label>Producte final <input id="saProduct" placeholder="Ex. campanya, pòster científic, podcast..." /></label>
-          <label>ODS / context real <input id="saContext" placeholder="Ex. salut, sostenibilitat, convivència..." /></label>
-          <label>Metodologia
+          <label><span>Producte final de la SA</span><small>Què haurà de crear o presentar l’alumnat al final.</small><input id="saProduct" placeholder="Ex. campanya, pòster científic, podcast..." /></label>
+          <label><span>Context real / ODS / necessitat</span><small>Situació propera que dona sentit al repte.</small><input id="saContext" placeholder="Ex. salut, sostenibilitat, convivència..." /></label>
+          <label><span>Metodologia de la SA</span>
             <select id="saMethod"><option>ABP</option><option>Aprenentatge cooperatiu</option><option>Indagació guiada</option><option>Classe invertida</option><option>Gamificació lleugera</option></select>
           </label>
-          <label>Tipus d’avaluació
+          <label><span>Tipus d’avaluació de la SA</span><small>Defineix quins instruments i evidències prioritzarà la situació.</small>
             <select id="saAssessment"><option>Formativa i sumativa</option><option>Autoavaluació i coavaluació</option><option>Rúbrica + observació</option><option>Portafolis</option></select>
           </label>
         </div>
@@ -97,6 +107,7 @@
 
       <section id="sessions" class="module panel">
         <div class="module-head"><div><h2>Planificador de sessions</h2><p>Distribueix el tema en una seqüència d’aula realista.</p></div><button data-generate="sessions" class="primary">Genera sessions</button></div>
+        <div class="module-guide"><strong>Aquests camps només afecten la planificació.</strong><span>El tema i el currículum venen del menú lateral. Aquí decideixes quantes sessions vols i amb quin enfocament.</span></div>
         <div class="grid three">
           <label>Nombre de sessions <input id="sessionCount" type="number" min="1" max="20" value="6" /></label>
           <label>Minuts/sessió <input id="sessionMinutes" type="number" min="30" max="120" value="55" /></label>
@@ -109,6 +120,7 @@
 
       <section id="worksheets" class="module panel">
         <div class="module-head"><div><h2>Creador de fitxes de treball</h2><p>Fitxes amb activitats, adaptacions i solucionari.</p></div><button data-generate="worksheets" class="primary">Genera fitxa</button></div>
+        <div class="module-guide"><strong>Aquests camps només afecten la fitxa.</strong><span>Per demanar exercicis concrets, escriu-los a la consigna global del menú lateral; aquí marques tipus, nivell i quantitat.</span></div>
         <div class="grid three">
           <label>Tipus <select id="worksheetType"><option>Comprensió i aplicació</option><option>Repàs</option><option>Ampliació</option><option>Lectura guiada</option><option>Problemes competencials</option></select></label>
           <label>Nivell <select id="worksheetLevel"><option>Bàsic</option><option>Mitjà</option><option>Avançat</option><option>Multinivell</option></select></label>
@@ -119,6 +131,7 @@
 
       <section id="rubrics" class="module panel">
         <div class="module-head"><div><h2>Generador de rúbriques</h2><p>Rúbriques editables per productes, exposicions i tasques.</p></div><button data-generate="rubrics" class="primary">Genera rúbrica</button></div>
+        <div class="module-guide"><strong>Aquests camps només afecten la rúbrica.</strong><span>La rúbrica utilitzarà els criteris seleccionats al menú lateral, però aquí concretes la tasca, escala i nombre de criteris.</span></div>
         <div class="grid three">
           <label>Tasca a avaluar <input id="rubricTask" placeholder="Ex. exposició oral, dossier, projecte..." /></label>
           <label>Escala <select id="rubricScale"><option>4 nivells</option><option>1-10</option><option>Assoliment: inicial / en procés / assolit / excel·lent</option></select></label>
@@ -129,6 +142,7 @@
 
       <section id="feedback" class="module panel">
         <div class="module-head"><div><h2>Feedback personalitzat</h2><p>Comentaris útils per Classroom, retorns d’activitat o tutoria.</p></div><button data-generate="feedback" class="primary">Genera feedback</button></div>
+        <div class="module-guide"><strong>Aquests camps només afecten el feedback.</strong><span>El retorn tindrà en compte tema, criteris i grup del menú lateral, però aquí cal enganxar l’evidència concreta de l’alumne/a.</span></div>
         <div class="grid two">
           <label>Resposta o observació de l’alumne/a <textarea id="studentWork" rows="6" placeholder="Enganxa aquí la resposta o escriu observacions breus."></textarea></label>
           <label>Objectiu de millora <textarea id="improvementGoal" rows="6" placeholder="Ex. argumentar amb evidències, ordenar idees, justificar càlculs..."></textarea></label>
@@ -140,6 +154,7 @@
 
       <section id="templates" class="module panel">
         <div class="module-head"><div><h2>Plantilles útils</h2><p>Fragments reutilitzables que ara es generen ja emplenats i es poden editar directament.</p></div><button data-generate="templates" class="primary">Genera plantilla editable</button></div>
+        <div class="module-guide"><strong>Tria una plantilla des del menú lateral o des d’aquestes targetes.</strong><span>La plantilla s’emplena amb les dades comunes i amb la informació específica que hagis posat als mòduls.</span></div>
         <div id="templatePreview" class="template-grid"></div>
         <output-card data-output="templates"></output-card>
       </section>

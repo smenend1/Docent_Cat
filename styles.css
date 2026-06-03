@@ -11,3 +11,8 @@ details summary{cursor:pointer; font-weight:700; color:#253b80;}
 .template-card.selected{outline:3px solid rgba(37,59,128,.22); border-color:#253b80;}
 
 .version-badge{font-size:.9rem;background:#eef1ff;color:#253b80;border:1px solid #c8d2ff;border-radius:999px;padding:.15rem .45rem;vertical-align:middle;}
+
+/* v7 clarity layer */
+.guide-card,.workflow-guide,.module-guide{border:1px solid rgba(37,59,128,.18);background:#f8f9ff;border-radius:16px;padding:12px 14px;margin:10px 0 16px;color:var(--ink)}
+.guide-card strong,.workflow-guide h2,.module-guide strong{color:var(--brand)}
+.guide-card p{margin:.35rem 0 0;color:var(--muted);font-size:.88rem;line-height:1.4}.workflow-guide{padding:16px 18px;margin-bottom:14px}.workflow-guide h2{margin:0 0 10px;font-size:1.05rem}.workflow-steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.workflow-steps div{background:white;border:1px solid var(--line);border-radius:14px;padding:12px}.workflow-steps strong{display:block;color:var(--brand);margin-bottom:4px}.workflow-steps span,.module-guide span,label small{display:block;color:var(--muted);font-weight:500;font-size:.84rem;line-height:1.35}.module-guide{display:grid;gap:4px}.module-guide strong{font-size:.94rem}label span{font-weight:700}.context-panel label{padding-bottom:10px;border-bottom:1px dashed rgba(37,59,128,.12)}.context-panel label:last-of-type{border-bottom:0}@media(max-width:920px){.workflow-steps{grid-template-columns:1fr}}

@@ -1,9 +1,14 @@
-# DocentCat v6 · Pas 1 cap a l'excel·lència
+# DocentCat v7 · Menú lateral més clar
 
 PWA estàtica per a GitHub Pages. No necessita backend ni compilació.
 
-## Novetats v6
+## Novetats v7
 
+- Interfície més clara: el menú lateral queda identificat com a **Dades comunes**.
+- Cada mòdul central explica quins camps són **específics** d'aquella generació.
+- Guia superior amb el flux: menú lateral → centre de pantalla → genera.
+- Les sortides generades separen **dades comunes del menú lateral** i **dades específiques del mòdul**.
+- Labels i textos d'ajuda millorats perquè sigui més evident què afecta a SA, fitxes, sessions, rúbriques o feedback.
 - Botó **Paquet complet**: genera SA, sessions, fitxa, rúbrica, feedback i plantilla en un sol HTML.
 - Exportació **HTML**, **Word (.doc)**, **TXT** i impressió/PDF des del navegador.
 - Fitxes més específiques quan la consigna indica quantitats i tipus d'exercicis.
@@ -16,10 +21,10 @@ PWA estàtica per a GitHub Pages. No necessita backend ni compilació.
 1. Puja tots els fitxers a l'arrel del repositori.
 2. Ves a `Settings > Pages`.
 3. Tria `Deploy from a branch`, branca `main`, carpeta `/root`.
-4. Obre la web amb `?v=6` per evitar memòria cau:
+4. Obre la web amb `?v=7` per evitar memòria cau:
 
 ```text
-https://el-teu-usuari.github.io/DocentCat/?v=6
+https://el-teu-usuari.github.io/DocentCat/?v=7
 ```
 
 ## Estructura mínima
