@@ -38,6 +38,9 @@
         <select id="templateType"></select>
       </label>
       <label>Tema o repte <input id="topic" placeholder="Ex. Energia sostenible al barri" /></label>
+      <label>Consigna detallada / què vols que generi exactament
+        <textarea id="taskDescription" rows="5" placeholder="Ex. Fitxa de 4t ESO sobre equacions de segon grau: 5 exercicis de factorització, 5 amb fórmula general, 2 problemes contextualitzats i solucionari pas a pas."></textarea>
+      </label>
       <label>Durada <input id="duration" placeholder="Ex. 8 sessions de 55 min" /></label>
       <label>Perfil del grup <textarea id="groupProfile" rows="4" placeholder="Ex. grup heterogeni, 2 alumnes nouvinguts, nivell lector desigual..."></textarea></label>
       <label>Competències específiques
@@ -146,8 +149,9 @@
     <div class="output-card">
       <div class="output-actions">
         <button class="copyBtn">Copia</button>
+        <button class="downloadHtmlBtn">Baixa HTML</button>
         <button class="downloadBtn">Baixa .txt</button>
-        <button class="printBtn">Imprimeix</button>
+        <button class="printBtn">Imprimeix/PDF</button>
       </div>
       <pre class="outputText">Encara no hi ha contingut generat.</pre>
     </div>

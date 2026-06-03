@@ -1,6 +1,6 @@
-const CACHE = 'docentcat-v2-curriculum';
+const CACHE = 'docentcat-v4-documents';
 const ASSETS = [
-  './','./index.html','./styles.css','./app.js','./manifest.webmanifest','./data/curriculum-data.js','./icons/icon-192.png','./icons/icon-512.png'
+  './','./index.html','./styles.css','./app.js','./manifest.webmanifest','./curriculum-data.js','./data/curriculum-data.js','./icons/icon-192.png','./icons/icon-512.png'
 ];
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(ASSETS)));
