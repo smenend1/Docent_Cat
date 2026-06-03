@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="ca">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#253b80" />
+  <title>DocentCat · Assistent docent PWA</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="app-header">
+    <div>
+      <p class="eyebrow">PWA per a docents de secundària · Catalunya</p>
+      <h1>DocentCat</h1>
+      <p class="subtitle">Crea situacions d’aprenentatge, sessions, fitxes, rúbriques i feedback a partir de currículum i plantilles.</p>
+    </div>
+    <div class="header-actions">
+      <button id="installBtn" class="ghost" hidden>Instal·la</button>
+      <button id="exportAllBtn" class="ghost">Exporta tot</button>
+      <button id="clearBtn" class="danger ghost">Neteja</button>
+    </div>
+  </header>
+
+  <main class="layout">
+    <aside class="panel context-panel">
+      <h2>Context curricular</h2>
+      <label>Etapa
+        <select id="stage"><option value="ESO">ESO</option></select>
+      </label>
+      <label>Curs
+        <select id="level"></select>
+      </label>
+      <label>Matèria
+        <select id="subject"></select>
+      </label>
+      <label>Plantilla de treball
+        <select id="templateType"></select>
+      </label>
+      <label>Tema o repte <input id="topic" placeholder="Ex. Energia sostenible al barri" /></label>
+      <label>Durada <input id="duration" placeholder="Ex. 8 sessions de 55 min" /></label>
+      <label>Perfil del grup <textarea id="groupProfile" rows="4" placeholder="Ex. grup heterogeni, 2 alumnes nouvinguts, nivell lector desigual..."></textarea></label>
+      <label>Competències específiques
+        <select id="ceSelect" multiple size="5"></select>
+      </label>
+      <label>Criteris d’avaluació
+        <select id="caSelect" multiple size="5"></select>
+      </label>
+      <label>Sabers
+        <select id="sabersSelect" multiple size="7"></select>
+      </label>
+      <div class="row-actions">
+        <button id="selectCoreBtn" class="ghost">Selecció suggerida</button>
+        <button id="copyCurriculumBtn" class="ghost">Copia selecció</button>
+      </div>
+      <details>
+        <summary>Afegir currículum propi</summary>
+        <p class="hint">Enganxa JSON amb l’estructura indicada al README. Es desa només al navegador.</p>
+        <textarea id="customCurriculum" rows="6" placeholder='{"ESO":{"1r ESO":{"Matèria":{"ce":[],"ca":[],"sabers":[]}}}}'></textarea>
+        <button id="importCurriculumBtn" class="ghost full">Importa JSON</button>
+      </details>
+      <label>Idioma de sortida
+        <select id="language"><option>Català</option><option>Castellà</option><option>Anglès</option></select>
+      </label>
+      <button id="saveContextBtn" class="primary full">Desa context</button>
+      <p class="hint"><strong>Nota honesta:</strong> la base curricular inclosa és editable i ampliable. Revisa-la amb la documentació oficial del centre/Departament abans d’usar-la com a referència definitiva.</p>
+    </aside>
+
+    <section class="workspace">
+      <nav class="tabs" aria-label="Mòduls">
+        <button class="tab active" data-tab="sa">1. SA</button>
+        <button class="tab" data-tab="sessions">2. Sessions</button>
+        <button class="tab" data-tab="worksheets">3. Fitxes</button>
+        <button class="tab" data-tab="rubrics">4. Rúbriques</button>
+        <button class="tab" data-tab="feedback">5. Feedback</button>
+        <button class="tab" data-tab="templates">Plantilles</button>
+      </nav>
+
+      <section id="sa" class="module active panel">
+        <div class="module-head"><div><h2>Generador de Situació d’Aprenentatge</h2><p>Model orientat al currículum competencial de Catalunya.</p></div><button data-generate="sa" class="primary">Genera SA</button></div>
+        <div class="grid two">
+          <label>Producte final <input id="saProduct" placeholder="Ex. campanya, pòster científic, podcast..." /></label>
+          <label>ODS / context real <input id="saContext" placeholder="Ex. salut, sostenibilitat, convivència..." /></label>
+          <label>Metodologia
+            <select id="saMethod"><option>ABP</option><option>Aprenentatge cooperatiu</option><option>Indagació guiada</option><option>Classe invertida</option><option>Gamificació lleugera</option></select>
+          </label>
+          <label>Tipus d’avaluació
+            <select id="saAssessment"><option>Formativa i sumativa</option><option>Autoavaluació i coavaluació</option><option>Rúbrica + observació</option><option>Portafolis</option></select>
+          </label>
+        </div>
+        <output-card data-output="sa"></output-card>
+      </section>
+
+      <section id="sessions" class="module panel">
+        <div class="module-head"><div><h2>Planificador de sessions</h2><p>Distribueix el tema en una seqüència d’aula realista.</p></div><button data-generate="sessions" class="primary">Genera sessions</button></div>
+        <div class="grid three">
+          <label>Nombre de sessions <input id="sessionCount" type="number" min="1" max="20" value="6" /></label>
+          <label>Minuts/sessió <input id="sessionMinutes" type="number" min="30" max="120" value="55" /></label>
+          <label>Enfocament
+            <select id="sessionFocus"><option>Competencial</option><option>Repàs i consolidació</option><option>Projecte final</option><option>Preparació prova</option></select>
+          </label>
+        </div>
+        <output-card data-output="sessions"></output-card>
+      </section>
+
+      <section id="worksheets" class="module panel">
+        <div class="module-head"><div><h2>Creador de fitxes de treball</h2><p>Fitxes amb activitats, adaptacions i solucionari.</p></div><button data-generate="worksheets" class="primary">Genera fitxa</button></div>
+        <div class="grid three">
+          <label>Tipus <select id="worksheetType"><option>Comprensió i aplicació</option><option>Repàs</option><option>Ampliació</option><option>Lectura guiada</option><option>Problemes competencials</option></select></label>
+          <label>Nivell <select id="worksheetLevel"><option>Bàsic</option><option>Mitjà</option><option>Avançat</option><option>Multinivell</option></select></label>
+          <label>Nombre d’activitats <input id="activityCount" type="number" min="3" max="20" value="8" /></label>
+        </div>
+        <output-card data-output="worksheets"></output-card>
+      </section>
+
+      <section id="rubrics" class="module panel">
+        <div class="module-head"><div><h2>Generador de rúbriques</h2><p>Rúbriques editables per productes, exposicions i tasques.</p></div><button data-generate="rubrics" class="primary">Genera rúbrica</button></div>
+        <div class="grid three">
+          <label>Tasca a avaluar <input id="rubricTask" placeholder="Ex. exposició oral, dossier, projecte..." /></label>
+          <label>Escala <select id="rubricScale"><option>4 nivells</option><option>1-10</option><option>Assoliment: inicial / en procés / assolit / excel·lent</option></select></label>
+          <label>Nombre de criteris <input id="rubricCriteria" type="number" min="3" max="8" value="5" /></label>
+        </div>
+        <output-card data-output="rubrics"></output-card>
+      </section>
+
+      <section id="feedback" class="module panel">
+        <div class="module-head"><div><h2>Feedback personalitzat</h2><p>Comentaris útils per Classroom, retorns d’activitat o tutoria.</p></div><button data-generate="feedback" class="primary">Genera feedback</button></div>
+        <div class="grid two">
+          <label>Resposta o observació de l’alumne/a <textarea id="studentWork" rows="6" placeholder="Enganxa aquí la resposta o escriu observacions breus."></textarea></label>
+          <label>Objectiu de millora <textarea id="improvementGoal" rows="6" placeholder="Ex. argumentar amb evidències, ordenar idees, justificar càlculs..."></textarea></label>
+          <label>To <select id="feedbackTone"><option>Proper i constructiu</option><option>Formal per a família</option><option>Breu per Classroom</option><option>Motivador</option></select></label>
+          <label>Nivell de detall <select id="feedbackDetail"><option>Breu</option><option>Mitjà</option><option>Detallat</option></select></label>
+        </div>
+        <output-card data-output="feedback"></output-card>
+      </section>
+
+      <section id="templates" class="module panel">
+        <div class="module-head"><div><h2>Plantilles útils</h2><p>Fragments reutilitzables per començar més ràpid.</p></div><button data-generate="templates" class="primary">Genera plantilla</button></div>
+        <div id="templatePreview" class="template-grid"></div>
+        <output-card data-output="templates"></output-card>
+      </section>
+    </section>
+  </main>
+
+  <template id="outputTemplate">
+    <div class="output-card">
+      <div class="output-actions">
+        <button class="copyBtn">Copia</button>
+        <button class="downloadBtn">Baixa .txt</button>
+        <button class="printBtn">Imprimeix</button>
+      </div>
+      <pre class="outputText">Encara no hi ha contingut generat.</pre>
+    </div>
+  </template>
+
+  <script src="data/curriculum-data.js"></script>
+  <script src="app.js" type="module"></script>
+</body>
+</html>

@@ -1,0 +1,188 @@
+const $ = (id) => document.getElementById(id);
+const storeKey = 'docentcat-pwa-v2-curriculum';
+const fields = ['stage','subject','level','templateType','topic','duration','groupProfile','language','saProduct','saContext','saMethod','saAssessment','sessionCount','sessionMinutes','sessionFocus','worksheetType','worksheetLevel','activityCount','rubricTask','rubricScale','rubricCriteria','studentWork','improvementGoal','feedbackTone','feedbackDetail','customCurriculum'];
+const multiFields = ['ceSelect','caSelect','sabersSelect'];
+const outputs = {};
+let curriculum = mergeDeep({}, window.DOCENTCAT_CURRICULUM || {});
+const templates = window.DOCENTCAT_TEMPLATES || {};
+
+class OutputCard extends HTMLElement {
+  connectedCallback(){
+    const tpl = document.getElementById('outputTemplate');
+    this.appendChild(tpl.content.cloneNode(true));
+    const key = this.dataset.output;
+    outputs[key] = this.querySelector('.outputText');
+    this.querySelector('.copyBtn').onclick = () => copyText(outputs[key].textContent);
+    this.querySelector('.downloadBtn').onclick = () => downloadText(`${key}-${dateSlug()}.txt`, outputs[key].textContent);
+    this.querySelector('.printBtn').onclick = () => window.print();
+  }
+}
+customElements.define('output-card', OutputCard);
+
+const get = id => ($(id)?.value || '').trim();
+const selectedValues = id => Array.from($(id)?.selectedOptions || []).map(o => o.value);
+const clean = s => String(s).replace(/[<>]/g,'');
+function lines(items){ return (items || []).map(x=>`- ${x}`).join('\n'); }
+function numbered(items){ return (items || []).map((x,i)=>`${i+1}. ${x}`).join('\n'); }
+function titleCase(s){ return s ? s[0].toUpperCase()+s.slice(1) : s; }
+function currentData(){ return curriculum[get('stage')]?.[get('level')]?.[get('subject')] || {ce:[], ca:[], sabers:[]}; }
+function pickedCurriculum(){
+  const data = currentData();
+  return {
+    ce: selectedValues('ceSelect').length ? selectedValues('ceSelect') : data.ce.slice(0,2),
+    ca: selectedValues('caSelect').length ? selectedValues('caSelect') : data.ca.slice(0,3),
+    sabers: selectedValues('sabersSelect').length ? selectedValues('sabersSelect') : data.sabers.slice(0,3)
+  };
+}
+function context(){
+  const picked = pickedCurriculum();
+  return {
+    etapa:get('stage'), materia:get('subject') || 'Matèria no indicada', curs:get('level'), tema:get('topic') || 'Tema pendent de concretar',
+    durada:get('duration') || 'Durada no indicada', grup:get('groupProfile') || 'Grup ordinari amb diversitat de ritmes', idioma:get('language'),
+    plantilla:get('templateType'), ce:picked.ce, ca:picked.ca, sabers:picked.sabers
+  };
+}
+function commonHeader(c){return `Context\nEtapa: ${c.etapa}\nMatèria: ${c.materia}\nCurs: ${c.curs}\nTema/repte: ${c.tema}\nDurada: ${c.durada}\nPerfil del grup: ${c.grup}\nPlantilla: ${c.plantilla}\nIdioma: ${c.idioma}\n\nCompetències específiques seleccionades\n${lines(c.ce)}\n\nCriteris d'avaluació seleccionats\n${lines(c.ca)}\n\nSabers seleccionats\n${lines(c.sabers)}\n`;}
+
+function populateSelect(select, values, keep = true){
+  const previous = keep ? new Set(selectedValues(select.id)) : new Set();
+  select.innerHTML = '';
+  values.forEach(v => {
+    const opt = document.createElement('option'); opt.value = v; opt.textContent = v;
+    if(previous.has(v)) opt.selected = true;
+    select.appendChild(opt);
+  });
+}
+function populateContextSelectors(){
+  populateSelect($('level'), Object.keys(curriculum[get('stage')] || {}), true);
+  if(!$('level').value) $('level').selectedIndex = 0;
+  const subjects = Object.keys(curriculum[get('stage')]?.[get('level')] || {});
+  populateSelect($('subject'), subjects, true);
+  if(!$('subject').value) $('subject').selectedIndex = 0;
+  populateSelect($('templateType'), Object.keys(templates), true);
+  if(!$('templateType').value) $('templateType').selectedIndex = 0;
+  populateCurriculumLists(false);
+  renderTemplatePreview();
+}
+function populateCurriculumLists(keep = true){
+  const data = currentData();
+  populateSelect($('ceSelect'), data.ce || [], keep);
+  populateSelect($('caSelect'), data.ca || [], keep);
+  populateSelect($('sabersSelect'), data.sabers || [], keep);
+}
+function selectCore(){
+  ['ceSelect','caSelect','sabersSelect'].forEach(id => Array.from($(id).options).forEach((opt,i)=> opt.selected = i < (id === 'sabersSelect' ? 3 : 2)));
+  save();
+  toast('Selecció suggerida aplicada');
+}
+function renderTemplatePreview(){
+  const root = $('templatePreview'); if(!root) return;
+  root.innerHTML = '';
+  Object.entries(templates).forEach(([name, parts]) => {
+    const card = document.createElement('button');
+    card.className = 'template-card';
+    card.type = 'button';
+    card.innerHTML = `<strong>${name}</strong><span>${parts.join(' · ')}</span>`;
+    card.onclick = () => { $('templateType').value = name; renderTemplatePreview(); save(); };
+    if(get('templateType') === name) card.classList.add('selected');
+    root.appendChild(card);
+  });
+}
+
+const generators = {
+  sa(){
+    const c=context(), product=get('saProduct')||'producte final aplicat al context proper', real=get('saContext')||'repte vinculat a la vida quotidiana', method=get('saMethod'), assessment=get('saAssessment');
+    return `${commonHeader(c)}\nSITUACIÓ D'APRENENTATGE\nTítol: ${titleCase(c.tema)}: del problema real a una proposta d'acció\n\nRepte inicial\nCom podem comprendre ${c.tema.toLowerCase()} i elaborar ${product} que ajudi a donar resposta a ${real}?\n\nIntencionalitat\nL'alumnat parteix d'una situació propera, analitza informació, construeix coneixement i el transfereix a un producte final comunicable. La proposta combina ${method.toLowerCase()} amb avaluació ${assessment.toLowerCase()}.\n\nObjectius d'aprenentatge\n${lines([`Identificar les idees clau relacionades amb ${c.tema}.`,`Aplicar els sabers seleccionats a una situació real o versemblant.`,`Argumentar decisions amb evidències, dades o exemples.`,`Treballar cooperativament assumint rols i responsabilitats.`,`Comunicar el producte final amb claredat i rigor.`])}\n\nConnexió curricular\nCompetències específiques:\n${lines(c.ce)}\n\nCriteris d'avaluació que guien les evidències:\n${lines(c.ca)}\n\nSabers que es mobilitzen:\n${lines(c.sabers)}\n\nSeqüència resumida\n1. Activació: pregunta inicial, coneixements previs i formulació d'hipòtesis.\n2. Construcció: fonts, explicacions breus, pràctica guiada i activitats cooperatives.\n3. Aplicació: elaboració progressiva de ${product}.\n4. Revisió: coavaluació amb llista de comprovació i millora del producte.\n5. Transferència: presentació, debat i reflexió individual.\n\nAvaluació\n- Evidències: diari de treball, activitats parcials, producte final i exposició/reflexió.\n- Instruments: rúbrica, observació docent, autoavaluació i coavaluació.\n- Criteris visibles per a l'alumnat: comprensió del repte, ús correcte dels sabers, qualitat de l'argumentació, cooperació i comunicació.\n\nAtenció a la diversitat\n- Opcions de resposta: text, esquema, àudio, infografia o presentació.\n- Bastides: vocabulari clau, exemples resolts, plantilla de planificació i parelles de suport.\n- Ampliació: comparació de casos, dades addicionals o proposta d'acció més complexa.\n\nMetacognició final\nQuè he après? Quina evidència ho demostra? Què milloraria si repetís el producte?`;},
+  sessions(){
+    const c=context(), n=Math.max(1, Math.min(20, Number(get('sessionCount'))||6)), min=get('sessionMinutes')||55, focus=get('sessionFocus');
+    const phases=['Activació i diagnosi','Exploració guiada','Construcció de sabers','Pràctica cooperativa','Aplicació al repte','Revisió i feedback','Producció final','Presentació i transferència','Avaluació i metacognició'];
+    let out=`${commonHeader(c)}\nPLANIFICACIÓ DE SESSIONS\nEnfocament: ${focus}\nDurada per sessió: ${min} minuts\n\n`;
+    for(let i=1;i<=n;i++){
+      const phase=phases[Math.min(phases.length-1, Math.floor((i-1)*phases.length/n))];
+      const saber=c.sabers[(i-1)%Math.max(1,c.sabers.length)] || c.tema;
+      const criteri=c.ca[(i-1)%Math.max(1,c.ca.length)] || 'Criteri a concretar';
+      out+=`Sessió ${i}. ${phase}\nObjectiu: avançar en ${c.tema.toLowerCase()} mobilitzant: ${saber}\nEstructura: 5' inici + ${Math.max(20,Number(min)-20)}' activitat principal + 10' tancament.\nActivitats: pregunta guia, treball individual o cooperatiu, posada en comú i evidència breu d'aprenentatge.\nMaterial: pissarra, dossier o dispositiu, plantilla de treball i criteris visibles.\nAvaluació: ${criteri}\n\n`;
+    }
+    return out + `Recomanació: reserva una sessió intermèdia per reorientar segons evidències i una part final per millorar el producte abans de qualificar.`;},
+  worksheets(){
+    const c=context(), type=get('worksheetType'), level=get('worksheetLevel'), count=Math.max(3,Math.min(20,Number(get('activityCount'))||8));
+    let acts=[]; for(let i=1;i<=count;i++){ const saber=c.sabers[(i-1)%Math.max(1,c.sabers.length)] || c.tema; acts.push(`${i}. Activitat ${i}: resol una tasca de ${type.toLowerCase()} sobre "${saber}". Inclou justificació breu i una evidència del procés.`)}
+    return `${commonHeader(c)}\nFITXA DE TREBALL\nTipus: ${type}\nNivell: ${level}\n\nNom: _______________________   Data: ___________\n\nObjectiu de la fitxa\nComprendre i aplicar els conceptes principals de ${c.tema.toLowerCase()} en activitats progressives.\n\nAbans de començar\nEscriu tres idees que ja coneixes sobre el tema i una pregunta que voldries resoldre.\n\nActivitats\n${acts.join('\n')}\n\nCriteris d'èxit\n${lines(c.ca)}\n\nAdaptació bàsica\n- Redueix el nombre d'activitats obligatòries a les imparells.\n- Dona banc de paraules, exemple inicial i passos numerats.\n\nAmpliació\n- Crea una activitat nova que connecti ${c.tema.toLowerCase()} amb una situació real de Catalunya o del teu entorn.\n\nSolucionari orientatiu\nLes respostes han de mostrar comprensió, ús de vocabulari específic, justificació i connexió amb el repte. El docent pot completar solucions concretes segons els sabers treballats.`;},
+  rubrics(){
+    const c=context(), task=get('rubricTask')||'producte o tasca final', scale=get('rubricScale'), count=Math.max(3,Math.min(8,Number(get('rubricCriteria'))||5));
+    const criteria = [...c.ca, 'Comunicació del procés i del resultat', 'Autonomia i revisió', 'Treball cooperatiu'].slice(0,count);
+    let table=`| Criteri | Inicial | En procés | Assolit | Excel·lent |\n|---|---|---|---|---|\n`;
+    criteria.forEach(crit => {table+=`| ${crit} | Mostra dificultats importants o evidències incompletes. | Avança amb ajuda i presenta alguns encerts. | Compleix el criteri amb correcció i evidències suficients. | Va més enllà, justifica amb rigor i transfereix l'aprenentatge. |\n`;});
+    return `${commonHeader(c)}\nRÚBRICA D'AVALUACIÓ\nTasca: ${task}\nEscala: ${scale}\n\n${table}\n\nÚs recomanat\n- Comparteix la rúbrica abans de començar la tasca.\n- Fes una coavaluació intermèdia abans de la versió final.\n- Afegeix una fila de compromís: “Què milloraré abans de lliurar?”.\n\nComentari global model\nEl resultat mostra el grau d'assoliment dels aprenentatges vinculats a ${c.tema.toLowerCase()}. La qualificació final hauria de combinar aquesta rúbrica amb les evidències del procés.`;},
+  feedback(){
+    const c=context(), work=get('studentWork')||"No s'ha introduït resposta concreta de l'alumne/a.", goal=get('improvementGoal')||'millorar la justificació i la claredat', tone=get('feedbackTone'), detail=get('feedbackDetail');
+    return `${commonHeader(c)}\nFEEDBACK PERSONALITZAT\nTo: ${tone}\nDetall: ${detail}\n\nEvidència observada\n${work}\n\nComentari per a l'alumne/a\nHas fet un pas positiu perquè es veu que has intentat treballar ${c.tema.toLowerCase()} i donar una resposta pròpia. El punt fort principal és que ja hi ha una base sobre la qual pots millorar.\n\nPer avançar\nAra cal centrar-se en ${goal}. Revisa la resposta i comprova que cada idea important estigui explicada amb un exemple, una dada o una justificació.\n\nCriteri de referència\n${c.ca[0] || 'Criteri a concretar pel docent.'}\n\nProper pas concret\n1. Subratlla la idea principal.\n2. Afegeix una evidència que la recolzi.\n3. Escriu una frase final que connecti la resposta amb el repte o la pregunta inicial.\n\nVersió breu per Classroom\nBon inici. Per millorar, afegeix més justificació i revisa que cada idea estigui connectada amb una evidència concreta.\n\nNota docent\nAquest retorn és una proposta. Cal revisar-lo abans d'enviar-lo i ajustar-lo al coneixement real de l'alumne/a.`;},
+  templates(){
+    const c=context();
+    const parts = templates[c.plantilla] || [];
+    return `${commonHeader(c)}\nPLANTILLA: ${c.plantilla}\n\nEstructura recomanada\n${numbered(parts)}\n\nText base editable\nTítol: ${titleCase(c.tema)}\nCurs i matèria: ${c.curs} · ${c.materia}\nFinalitat: treballar ${c.tema.toLowerCase()} a partir d'una situació propera, mobilitzant els sabers seleccionats i recollint evidències vinculades als criteris d'avaluació.\n\nApartats per completar\n${parts.map(p=>`## ${p}\n[Escriu aquí el contingut de l'apartat.]`).join('\n\n')}`;
+  }
+};
+
+function save(){
+  const data={fields:{}, multi:{}, outputs:{}, custom: null};
+  fields.forEach(f=>{if($(f)) data.fields[f]=$(f).value});
+  multiFields.forEach(f=>{if($(f)) data.multi[f]=selectedValues(f)});
+  Object.keys(outputs).forEach(k=>data.outputs[k]=outputs[k].textContent);
+  localStorage.setItem(storeKey,JSON.stringify(data));
+  toast('Desat al navegador');
+}
+function load(){
+  try{
+    const data=JSON.parse(localStorage.getItem(storeKey)||'{}');
+    if(data.fields?.customCurriculum){ try{ curriculum = mergeDeep(curriculum, JSON.parse(data.fields.customCurriculum)); }catch{} }
+    populateContextSelectors();
+    Object.entries(data.fields||{}).forEach(([k,v])=>{if($(k)) $(k).value=v});
+    populateContextSelectors();
+    Object.entries(data.multi||{}).forEach(([k,values])=>{if($(k)){ const set=new Set(values); Array.from($(k).options).forEach(o=>o.selected=set.has(o.value)); }});
+    queueMicrotask(()=>Object.entries(data.outputs||{}).forEach(([k,v])=>{if(outputs[k]) outputs[k].textContent=v}));
+  }catch{ populateContextSelectors(); }
+}
+function generate(key){ const text = clean(generators[key]()); outputs[key].textContent=text; save(); }
+function copyText(text){ navigator.clipboard?.writeText(text).then(()=>toast('Copiat')); }
+function downloadText(filename,text){ const blob=new Blob([text],{type:'text/plain;charset=utf-8'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=filename; a.click(); URL.revokeObjectURL(a.href); }
+function dateSlug(){ return new Date().toISOString().slice(0,10); }
+function toast(msg){ const el=document.createElement('div'); el.className='toast'; el.textContent=msg; document.body.appendChild(el); setTimeout(()=>el.remove(),2200); }
+function mergeDeep(target, source){
+  for(const [key,value] of Object.entries(source || {})){
+    if(value && typeof value === 'object' && !Array.isArray(value)) target[key] = mergeDeep(target[key] || {}, value);
+    else target[key] = value;
+  }
+  return target;
+}
+function importCustomCurriculum(){
+  try{
+    const txt = get('customCurriculum');
+    if(!txt) return toast('No hi ha JSON per importar');
+    const custom = JSON.parse(txt);
+    curriculum = mergeDeep(curriculum, custom);
+    populateContextSelectors();
+    save();
+    toast('Currículum propi importat');
+  }catch(err){ toast('JSON no vàlid'); }
+}
+function copyCurriculum(){
+  const c = context();
+  copyText(`Competències específiques\n${lines(c.ce)}\n\nCriteris d'avaluació\n${lines(c.ca)}\n\nSabers\n${lines(c.sabers)}`);
+}
+
+for(const btn of document.querySelectorAll('.tab')) btn.onclick=()=>{ document.querySelectorAll('.tab,.module').forEach(x=>x.classList.remove('active')); btn.classList.add('active'); $(btn.dataset.tab).classList.add('active'); };
+for(const btn of document.querySelectorAll('[data-generate]')) btn.onclick=()=>generate(btn.dataset.generate);
+$('saveContextBtn').onclick=save;
+$('selectCoreBtn').onclick=selectCore;
+$('copyCurriculumBtn').onclick=copyCurriculum;
+$('importCurriculumBtn').onclick=importCustomCurriculum;
+$('clearBtn').onclick=()=>{ if(confirm('Vols esborrar les dades locals de DocentCat?')){ localStorage.removeItem(storeKey); location.reload(); }};
+$('exportAllBtn').onclick=()=>{ const all=Object.keys(outputs).map(k=>`# ${k.toUpperCase()}\n\n${outputs[k].textContent}`).join('\n\n---\n\n'); downloadText(`docentcat-export-${dateSlug()}.txt`, all); };
+fields.forEach(f=>$(f)?.addEventListener('change',()=>{ if(['stage','level','subject'].includes(f)){ populateContextSelectors(); } if(f === 'templateType') renderTemplatePreview(); save(); }));
+multiFields.forEach(f=>$(f)?.addEventListener('change', save));
+
+let deferredPrompt; window.addEventListener('beforeinstallprompt', e=>{ e.preventDefault(); deferredPrompt=e; $('installBtn').hidden=false; });
+$('installBtn').onclick=async()=>{ if(deferredPrompt){ deferredPrompt.prompt(); await deferredPrompt.userChoice; deferredPrompt=null; $('installBtn').hidden=true; }};
+if('serviceWorker' in navigator){ navigator.serviceWorker.register('./service-worker.js'); }
+load();
