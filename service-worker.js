@@ -1,4 +1,4 @@
-const CACHE = 'docentcat-v4-documents';
+const CACHE = 'docentcat-v5-editable-templates';
 const ASSETS = [
   './','./index.html','./styles.css','./app.js','./manifest.webmanifest','./curriculum-data.js','./data/curriculum-data.js','./icons/icon-192.png','./icons/icon-512.png'
 ];

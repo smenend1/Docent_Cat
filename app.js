@@ -1,5 +1,5 @@
 const $ = (id) => document.getElementById(id);
-const storeKey = 'docentcat-pwa-v4-documents';
+const storeKey = 'docentcat-pwa-v5-editable-templates';
 const fields = ['stage','subject','level','templateType','topic','taskDescription','duration','groupProfile','language','saProduct','saContext','saMethod','saAssessment','sessionCount','sessionMinutes','sessionFocus','worksheetType','worksheetLevel','activityCount','rubricTask','rubricScale','rubricCriteria','studentWork','improvementGoal','feedbackTone','feedbackDetail','customCurriculum'];
 const multiFields = ['ceSelect','caSelect','sabersSelect'];
 const outputs = {};
@@ -16,6 +16,7 @@ class OutputCard extends HTMLElement {
     this.querySelector('.downloadBtn').onclick = () => downloadText(`${key}-${dateSlug()}.txt`, outputs[key].textContent);
     this.querySelector('.downloadHtmlBtn').onclick = () => downloadHtml(`${key}-${dateSlug()}.html`, outputs[key].textContent, key.toUpperCase());
     this.querySelector('.printBtn').onclick = () => printDocument(outputs[key].textContent, key.toUpperCase());
+    outputs[key].addEventListener('input', save);
   }
 }
 customElements.define('output-card', OutputCard);
@@ -153,6 +154,86 @@ function detailedSequence(c, n){
   return out;
 }
 
+
+function firstOr(items, fallback){ return (items && items.length) ? items[0] : fallback; }
+function templateFill(part, c){
+  const name = String(part || 'Apartat');
+  const low = name.toLowerCase();
+  const tema = c.tema || 'el tema';
+  const criteri = firstOr(c.ca, "criteri d'avaluació seleccionat o a concretar");
+  const saber = firstOr(c.sabers, 'saber seleccionat o a concretar');
+  const producte = get('saProduct') || 'producte final aplicat';
+  const contextReal = get('saContext') || "context proper de l'alumnat";
+  const activitats = exerciseItems(c, 3).map(x=>x.replace(/^\d+\.\s*/, ''));
+  if(low.includes('repte inicial') || low.includes('pregunta guia')) return `Com podem aplicar ${tema.toLowerCase()} per donar resposta a una necessitat o situació real vinculada a ${contextReal}?`;
+  if(low.includes('context') || low.includes('justific')) return `La proposta parteix de ${contextReal} i connecta amb el perfil del grup: ${c.grup}. Consigna docent: ${c.descripcio || 'cal concretar la consigna detallada al menú lateral'}.`;
+  if(low.includes('producte final')) return `${producte}. Ha d'incloure evidències del procés, justificació de decisions, ús de vocabulari específic i revisió final vinculada als criteris d'èxit.`;
+  if(low.includes('objectius')) return lines([`Comprendre i aplicar ${tema}.`, `Mobilitzar el saber: ${saber}.`, `Justificar procediments o conclusions amb evidències.`, `Comunicar el procés i el resultat amb rigor.`]);
+  if(low.includes('competències')) return lines(c.ce.length ? c.ce : ['Competència específica a concretar']);
+  if(low.includes('criteris')) return lines(c.ca.length ? c.ca : [criteri]);
+  if(low.includes('sabers')) return lines(c.sabers.length ? c.sabers : [saber]);
+  if(low.includes('seqüència') || low.includes('fases')) return detailedSequence(c, Math.min(6, Math.max(3, Number(get('sessionCount')) || 4))).trim();
+  if(low.includes('activació')) return `Pregunta inicial: què sabem de ${tema}? Recollida ràpida d'idees prèvies i vocabulari clau.`;
+  if(low.includes('modelatge') || low.includes('miniinput')) return `El docent mostra un exemple complet relacionat amb ${tema}, verbalitzant passos, errors freqüents i criteris de qualitat.`;
+  if(low.includes('tasca guiada')) return activitats[0] || `Tasca guiada sobre ${tema} amb passos i bastides.`;
+  if(low.includes('tasca autònoma') || low.includes('cooperativa')) return activitats[1] || 'Tasca cooperativa amb rols, evidència individual i revisió per parelles.';
+  if(low.includes('posada')) return `Posada en comú de dues estratègies diferents. L'alumnat compara procediments i millora una resposta pròpia.`;
+  if(low.includes('ticket')) return 'Tiquet de sortida: escriu una idea apresa, una evidència i una pregunta o error que encara cal revisar.';
+  if(low.includes('objectiu de la fitxa')) return `Aplicar ${tema.toLowerCase()} amb activitats graduades i evidències vinculades a ${criteri}.`;
+  if(low.includes('activitat comuna')) return activitats[0] || `Activitat comuna d'aplicació sobre ${tema}.`;
+  if(low.includes('itinerari bàsic')) return `1. Resol una versió guiada amb dades destacades.
+2. Completa passos intermedis.
+3. Usa banc de paraules, fórmules o esquema de suport.`;
+  if(low.includes('itinerari estàndard')) return activitats.slice(0,2).map((a,i)=>`${i+1}. ${a}`).join('\n');
+  if(low.includes('repte d')) return activitats[2] || `Repte: crea una situació nova sobre ${tema}, resol-la i explica quin criteri permet observar.`;
+  if(low.includes('autoavaluació')) return "Marca de l'1 al 4: he entès la tasca, he justificat la resposta, he usat vocabulari específic i he revisat errors. Escriu una millora concreta.";
+  if(low.includes('instrument') || low.includes('avaluació')) return `Instruments: rúbrica analítica, llista de comprovació i tiquet de sortida. Evidències: activitats resoltes, procés, producte final i autoavaluació. Criteri clau: ${criteri}.`;
+  if(low.includes('atenció') || low.includes('dua') || low.includes('suports') || low.includes('bastides')) return 'Suports: exemple resolt, passos numerats, vocabulari clau, parelles de suport, opció de resposta visual/oral/escrita i ampliació oberta.';
+  if(low.includes('transferència') || low.includes('metacogn')) return `Reflexió final: què he après sobre ${tema}? Quina evidència ho demostra? On ho podria aplicar fora de l'aula? Què milloraria amb una sessió més?`;
+  if(low.includes('criteri d')) return criteri;
+  if(low.includes('nivell inicial')) return `Resposta incompleta o poc ajustada; necessita guia i encara no relaciona el treball amb ${saber}.`;
+  if(low.includes('nivell en procés')) return 'Mostra comprensió parcial, però ha de millorar precisió, justificació o connexió amb el criteri.';
+  if(low.includes('nivell assolit')) return 'Compleix el criteri amb una resposta ordenada, evidències suficients i ús adequat del vocabulari.';
+  if(low.includes('nivell excel')) return 'Aporta rigor, transferència a un context nou, revisió autònoma i justificació aprofundida.';
+  if(low.includes('evidències')) return 'Evidències observables: resposta escrita, càlcul/model/esquema/prototip, justificació oral o escrita, revisió del procés i producte final.';
+  if(low.includes('3 evidències')) return `1. Ha identificat una idea clau de ${tema}.
+2. Ha intentat aplicar-la a una tasca concreta.
+3. Ha produït una evidència revisable.`;
+  if(low.includes('2 aspectes')) return `1. Concretar millor la justificació amb dades, exemples o procediment.
+2. Revisar vocabulari específic i coherència de la resposta.`;
+  if(low.includes('1 proper')) return 'Reescriu una resposta afegint una evidència explícita i una frase final que respongui directament al repte.';
+  if(low.includes('classroom')) return 'Bon inici. Ara cal concretar més el procediment i afegir evidències que justifiquin la resposta.';
+  if(low.includes('tutoria') || low.includes('família')) return "S'observa progrés en la implicació amb la tasca. Per avançar, convé reforçar l'organització, la justificació de respostes i la revisió final.";
+  if(low.includes('pregunta investigable')) return `Quina relació hi ha entre una variable vinculada a ${tema} i el resultat que observem en una situació controlada?`;
+  if(low.includes('hipòtesi')) return `Si modifiquem la variable principal, aleshores el resultat canviarà de manera observable perquè està relacionat amb ${saber}.`;
+  if(low.includes('variables')) return 'Variable independent: factor que modificarem. Variable dependent: resultat que mesurarem. Variables controlades: condicions constants.';
+  if(low.includes('material')) return 'Material orientatiu: full de registre, instrument de mesura, material específic de la pràctica, EPI si cal i eina digital per tractar dades.';
+  if(low.includes('procediment')) return `1. Preparar el material.
+2. Fer una prova inicial.
+3. Recollir dades ordenadament.
+4. Repetir o contrastar resultats.
+5. Formular conclusió vinculada a les dades.`;
+  if(low.includes('dades')) return 'Taula de dades: variable independent, mesura 1, mesura 2, mitjana, observacions i incidències.';
+  if(low.includes('conclusions')) return 'La conclusió ha d’indicar si les dades confirmen la hipòtesi, quina evidència és més clara i quines limitacions té el procediment.';
+  if(low.includes('seguretat')) return "Normes: seguir instruccions del docent, no manipular material sense permís, usar protecció quan calgui i deixar l'espai net i segur.";
+  if(low.includes('matèries implicades')) return `${c.materia} com a matèria principal; possibles connexions amb llengües, matemàtiques, tecnologia, ciències o àmbit social segons el producte final.`;
+  if(low.includes('rols')) return 'Rols: coordinació, documentació, control de temps, qualitat/revisió i portaveu. Cada alumne conserva una evidència individual.';
+  if(low.includes('difusió')) return 'Difusió: exposició breu, pòster, document compartit, presentació oral o publicació interna del centre, amb cura de privacitat i autoria.';
+  if(low.includes('abans de llegir')) return `Activa coneixements previs sobre ${tema}, anticipa vocabulari clau i formula dues preguntes de lectura.`;
+  if(low.includes('durant')) return 'Subratlla idees clau, anota dubtes i marca evidències que ajudin a respondre la pregunta guia.';
+  if(low.includes('després')) return 'Resumeix la idea principal, respon les preguntes i connecta la lectura amb una activitat aplicada.';
+  if(low.includes('vocabulari')) return `Vocabulari clau: ${keywordList(c).slice(0,6).join(', ') || tema}. Defineix cada terme amb una frase pròpia.`;
+  if(low.includes('inferencial')) return 'Quina conclusió pots deduir encara que no aparegui literalment al text o a les dades? Justifica-la.';
+  if(low.includes('crítica')) return 'Quina limitació, biaix o decisió discutible detectes? Proposa una millora argumentada.';
+  if(low.includes('tema controvertit')) return `${tema}: analitzar diferents posicions a partir d'evidències, impactes i criteris de decisió.`;
+  if(low.includes('documents')) return 'Documents de partida: una font informativa breu, una dada o gràfic, un cas real i una opinió argumentada per contrastar.';
+  if(low.includes('arguments')) return 'Cada equip prepara tres arguments amb evidències i preveu una possible resposta crítica.';
+  if(low.includes('contraarguments')) return 'Identifica el punt feble d’un argument contrari i respon amb respecte, dades i criteri.';
+  if(low.includes('rúbrica oral')) return 'Criteris: claredat, evidències, escolta activa, respecte dels torns, resposta a contraarguments i conclusió.';
+  if(low.includes('conclusió personal')) return "Escriu una conclusió pròpia indicant què pensaves abans, què has après i quina evidència t'ha fet canviar o matisar la posició.";
+  return `Proposta emplenada: treballar ${tema.toLowerCase()} a partir de ${saber}, amb una evidència observable i revisió vinculada a ${criteri}.`;
+}
+
 const generators = {
   sa(){
     const c=context(), product=get('saProduct')||'producte final aplicat al context proper', real=get('saContext')||'repte vinculat a la vida quotidiana', method=get('saMethod'), assessment=get('saAssessment');
@@ -178,7 +259,8 @@ const generators = {
     return `${commonHeader(c)}\nFEEDBACK PERSONALITZAT\nTo: ${tone}\nDetall: ${detail}\n\nEvidència observada\n${work}\n\nRetorn per a l'alumne/a\nHas començat a treballar ${c.tema.toLowerCase()} i ja hi ha una base aprofitable. El pas següent és fer que la resposta sigui més verificable: no n'hi ha prou amb dir la idea, cal mostrar el procediment, la dada, l'exemple o l'evidència que la sosté.\n\nPunt fort\nS'aprecia intent de resposta pròpia i connexió amb el tema.\n\nMillora prioritària\n${goal}. Revisa la producció i afegeix una justificació concreta en cada apartat important.\n\nCriteri de referència\n${c.ca[0] || 'Criteri a concretar pel docent.'}\n\nAcció concreta per millorar\n1. Marca la idea principal.\n2. Afegeix una evidència, càlcul, exemple, esquema o dada.\n3. Escriu una frase final que respongui directament al repte.\n4. Revisa vocabulari específic i coherència.\n\nVersió breu per Classroom\nBon inici. Per millorar, concreta més el procediment i afegeix evidències que justifiquin la resposta.\n\nNota docent\nRevisa aquest retorn abans d'enviar-lo. És una proposta, no una valoració automàtica definitiva.`;},
   templates(){
     const c=context(); const parts = templates[c.plantilla] || [];
-    return `${commonHeader(c)}\nPLANTILLA: ${c.plantilla}\n\nEstructura recomanada\n${numbered(parts)}\n\nText base editable\nTítol: ${titleCase(c.tema)}\nCurs i matèria: ${c.curs} · ${c.materia}\nFinalitat: treballar ${c.tema.toLowerCase()} a partir d'una situació propera, mobilitzant els sabers seleccionats i recollint evidències vinculades als criteris d'avaluació.\n\nApartats per completar\n${parts.map(p=>`## ${p}\n[Escriu aquí el contingut de l'apartat.]`).join('\n\n')}`;
+    const filled = parts.map(p=>`## ${p}\n${templateFill(p,c)}`).join('\n\n');
+    return `${commonHeader(c)}\nPLANTILLA EDITABLE EMPLENADA: ${c.plantilla}\n\nCom usar-la\n- Pots editar directament aquest text dins la caixa de resultat.\n- Els apartats ja no queden en blanc: s'han omplert amb el context, la consigna, els sabers, els criteris i la matèria seleccionats.\n- Revisa-ho abans de copiar, baixar o imprimir.\n\nTítol: ${titleCase(c.tema)}\nCurs i matèria: ${c.curs} · ${c.materia}\nFinalitat: treballar ${c.tema.toLowerCase()} a partir d'una situació propera, mobilitzant els sabers seleccionats i recollint evidències vinculades als criteris d'avaluació.\n\n${filled}`;
   }
 };
 
