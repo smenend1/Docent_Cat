@@ -1,4 +1,4 @@
-const CACHE = 'docentcat-v9-curriculum-linked';
+const CACHE = 'docentcat-v10-curriculum-linked';
 const ASSETS = [
   './','./index.html','./styles.css','./app.js','./manifest.webmanifest','./curriculum-data.js','./data/curriculum-data.js','./icons/icon-192.png','./icons/icon-512.png'
 ];
@@ -14,3 +14,5 @@ self.addEventListener('fetch', event => {
   if(event.request.method !== 'GET') return;
   event.respondWith(caches.match(event.request).then(cached => cached || fetch(event.request)));
 });
+
+// DocentCat v10 STEM refresh
