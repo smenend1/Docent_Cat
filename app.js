@@ -1,5 +1,5 @@
 const $ = (id) => document.getElementById(id);
-const storeKey = 'docentcat-pwa-v6-excellence-step1';
+const storeKey = 'docentcat-pwa-v8-compact-dashboard';
 const fields = ['stage','subject','level','templateType','topic','taskDescription','duration','groupProfile','language','saProduct','saContext','saMethod','saAssessment','sessionCount','sessionMinutes','sessionFocus','worksheetType','worksheetLevel','activityCount','rubricTask','rubricScale','rubricCriteria','studentWork','improvementGoal','feedbackTone','feedbackDetail','customCurriculum'];
 const multiFields = ['ceSelect','caSelect','sabersSelect'];
 const outputs = {};
@@ -385,9 +385,10 @@ function documentHtml(text,title='DocentCat'){
 function printDocument(text,title){ const w=window.open('', '_blank'); if(!w){toast('El navegador ha bloquejat la finestra d\'impressió'); return;} w.document.open(); w.document.write(documentHtml(text,title)); w.document.close(); w.focus(); setTimeout(()=>w.print(),300); }
 function downloadHtml(filename,text,title){ const blob=new Blob([documentHtml(text,title)],{type:'text/html;charset=utf-8'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=filename; a.click(); URL.revokeObjectURL(a.href); }
 function downloadDoc(filename,text,title){ const blob=new Blob([documentHtml(text,title)],{type:'application/msword;charset=utf-8'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=filename; a.click(); URL.revokeObjectURL(a.href); }
-function save(){ const data={fields:{}, multi:{}, outputs:{}, custom: null}; fields.forEach(f=>{if($(f)) data.fields[f]=$(f).value}); multiFields.forEach(f=>{if($(f)) data.multi[f]=selectedValues(f)}); Object.keys(outputs).forEach(k=>data.outputs[k]=outputs[k].textContent); localStorage.setItem(storeKey,JSON.stringify(data)); toast('Desat al navegador'); }
+function collectState(){ const data={fields:{}, multi:{}, outputs:{}, custom: null}; fields.forEach(f=>{if($(f)) data.fields[f]=$(f).value}); multiFields.forEach(f=>{if($(f)) data.multi[f]=selectedValues(f)}); Object.keys(outputs).forEach(k=>data.outputs[k]=outputs[k].textContent); return data; }
+function save(){ const data=collectState(); localStorage.setItem(storeKey,JSON.stringify(data)); updateSummary(); toast('Desat al navegador'); }
 function load(){ try{ const data=JSON.parse(localStorage.getItem(storeKey)||'{}'); if(data.fields?.customCurriculum){ try{ curriculum = mergeDeep(curriculum, JSON.parse(data.fields.customCurriculum)); }catch{} } populateContextSelectors(); Object.entries(data.fields||{}).forEach(([k,v])=>{if($(k)) $(k).value=v}); populateContextSelectors(); Object.entries(data.multi||{}).forEach(([k,values])=>{if($(k)){ const set=new Set(values); Array.from($(k).options).forEach(o=>o.selected=set.has(o.value)); }}); queueMicrotask(()=>Object.entries(data.outputs||{}).forEach(([k,v])=>{if(outputs[k]) outputs[k].textContent=v})); }catch{ populateContextSelectors(); } }
-function generate(key){ const text = clean(generators[key]()); outputs[key].textContent=text; save(); }
+function generate(key){ const text = clean(generators[key]()); outputs[key].textContent=text; save(); updateSummary(); }
 function copyText(text){ navigator.clipboard?.writeText(text).then(()=>toast('Copiat')); }
 function downloadText(filename,text){ const blob=new Blob([text],{type:'text/plain;charset=utf-8'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=filename; a.click(); URL.revokeObjectURL(a.href); }
 function dateSlug(){ return new Date().toISOString().slice(0,10); }
@@ -398,12 +399,34 @@ function copyCurriculum(){ const c = context(); copyText(`Competències específ
 for(const btn of document.querySelectorAll('.tab')) btn.onclick=()=>{ document.querySelectorAll('.tab,.module').forEach(x=>x.classList.remove('active')); btn.classList.add('active'); $(btn.dataset.tab).classList.add('active'); };
 for(const btn of document.querySelectorAll('[data-generate]')) btn.onclick=()=>generate(btn.dataset.generate);
 $('saveContextBtn').onclick=save; $('selectCoreBtn').onclick=selectCore; $('copyCurriculumBtn').onclick=copyCurriculum; $('importCurriculumBtn').onclick=importCustomCurriculum;
-$('clearBtn').onclick=()=>{ if(confirm('Vols esborrar les dades locals de DocentCat?')){ localStorage.removeItem(storeKey); location.reload(); }};
+$('clearBtn').onclick=()=>{ if(confirm('Vols esborrar les dades locals de DocentCat?')){ localStorage.removeItem(storeKey); location.reload();
+updateSummary(); }};
 $('exportAllBtn').onclick=()=>{ const all=Object.keys(outputs).map(k=>`# ${k.toUpperCase()}\n\n${outputs[k].textContent}`).join('\n\n---\n\n'); downloadHtml(`docentcat-export-${dateSlug()}.html`, all, 'Exportació DocentCat'); };
 $('fullPackBtn').onclick=()=>{ ['sa','sessions','worksheets','rubrics','feedback','templates'].forEach(k=>{ if(outputs[k]) outputs[k].textContent = clean(generators[k]()); }); save(); const all=Object.keys(outputs).map(k=>`# ${k.toUpperCase()}\n\n${outputs[k].textContent}`).join('\n\n---\n\n'); downloadHtml(`docentcat-paquet-complet-${dateSlug()}.html`, all, 'Paquet complet DocentCat'); };
 fields.forEach(f=>$(f)?.addEventListener('change',()=>{ if(['stage','level','subject'].includes(f)){ populateContextSelectors(); } if(f === 'templateType') renderTemplatePreview(); save(); }));
 multiFields.forEach(f=>$(f)?.addEventListener('change', save));
+
+function updateSummary(){
+  if($('summaryStage')) $('summaryStage').textContent = get('stage') || 'ESO';
+  if($('summaryLevel')) $('summaryLevel').textContent = get('level') || '—';
+  if($('summarySubject')) $('summarySubject').textContent = get('subject') || '—';
+  if($('summaryTopic')) $('summaryTopic').textContent = get('topic') || '—';
+}
+function openModal(id){ const modal=$(id); if(!modal) return; modal.hidden=false; document.body.classList.add('modal-open'); const focusable=modal.querySelector('input,select,textarea,button'); focusable?.focus(); }
+function closeModal(modal){ if(!modal) return; modal.hidden=true; document.body.classList.remove('modal-open'); updateSummary(); }
+function exportStateJson(){ const blob=new Blob([JSON.stringify(collectState(), null, 2)],{type:'application/json;charset=utf-8'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`docentcat-projecte-${dateSlug()}.json`; a.click(); URL.revokeObjectURL(a.href); }
+function importStateJson(file){ if(!file) return; const reader=new FileReader(); reader.onload=()=>{ try{ const data=JSON.parse(reader.result); localStorage.setItem(storeKey, JSON.stringify(data)); toast('Projecte JSON importat'); setTimeout(()=>location.reload(),500); }catch{ toast('JSON de projecte no vàlid'); } }; reader.readAsText(file); }
+for(const btn of document.querySelectorAll('[data-open-modal]')) btn.addEventListener('click',()=>openModal(btn.dataset.openModal));
+for(const btn of document.querySelectorAll('[data-close-modal]')) btn.addEventListener('click',()=>closeModal(btn.closest('.modal')));
+for(const modal of document.querySelectorAll('.modal')) modal.addEventListener('click',e=>{ if(e.target===modal) closeModal(modal); });
+window.addEventListener('keydown',e=>{ if(e.key==='Escape'){ const open=document.querySelector('.modal:not([hidden])'); if(open) closeModal(open); }});
+$('exportAllBtnMirror')?.addEventListener('click',()=>$('exportAllBtn')?.click());
+$('fullPackBtnMirror')?.addEventListener('click',()=>$('fullPackBtn')?.click());
+$('exportStateBtn')?.addEventListener('click',exportStateJson);
+$('importStateFile')?.addEventListener('change',e=>importStateJson(e.target.files?.[0]));
+
 let deferredPrompt; window.addEventListener('beforeinstallprompt', e=>{ e.preventDefault(); deferredPrompt=e; $('installBtn').hidden=false; });
 $('installBtn').onclick=async()=>{ if(deferredPrompt){ deferredPrompt.prompt(); await deferredPrompt.userChoice; deferredPrompt=null; $('installBtn').hidden=true; }};
 if('serviceWorker' in navigator){ navigator.serviceWorker.register('./service-worker.js'); }
 load();
+updateSummary();

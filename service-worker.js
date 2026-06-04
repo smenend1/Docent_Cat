@@ -1,4 +1,4 @@
-const CACHE = 'docentcat-v7-clarity';
+const CACHE = 'docentcat-v8-compact-dashboard';
 const ASSETS = [
   './','./index.html','./styles.css','./app.js','./manifest.webmanifest','./curriculum-data.js','./data/curriculum-data.js','./icons/icon-192.png','./icons/icon-512.png'
 ];

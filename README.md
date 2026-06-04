@@ -1,47 +1,49 @@
-# DocentCat v7 · Menú lateral més clar
+# DocentCat v8 · Panell compacte
 
-PWA estàtica per a GitHub Pages. No necessita backend ni compilació.
+PWA per a docents de secundària a Catalunya. Aquesta versió substitueix la pantalla amb menú lateral llarg per un panell principal de botons quadrats.
 
-## Novetats v7
+## Novetats v8
 
-- Interfície més clara: el menú lateral queda identificat com a **Dades comunes**.
-- Cada mòdul central explica quins camps són **específics** d'aquella generació.
-- Guia superior amb el flux: menú lateral → centre de pantalla → genera.
-- Les sortides generades separen **dades comunes del menú lateral** i **dades específiques del mòdul**.
-- Labels i textos d'ajuda millorats perquè sigui més evident què afecta a SA, fitxes, sessions, rúbriques o feedback.
-- Botó **Paquet complet**: genera SA, sessions, fitxa, rúbrica, feedback i plantilla en un sol HTML.
-- Exportació **HTML**, **Word (.doc)**, **TXT** i impressió/PDF des del navegador.
-- Fitxes més específiques quan la consigna indica quantitats i tipus d'exercicis.
-- Millor interpretació de consignes com: `5 exercicis de factorització, 5 amb fórmula general, 2 problemes contextualitzats`.
-- Plantilles editables i sortides modificables dins l'app.
-- Service worker actualitzat per evitar memòria cau antiga.
+- Pantalla inicial compacta tipus panell de control.
+- Botons quadrats per a:
+  - Dades comunes
+  - Currículum
+  - SA
+  - Sessions
+  - Fitxes
+  - Rúbriques
+  - Feedback
+  - Plantilles
+  - Exportar / importar
+- Cada botó obre una finestra de configuració.
+- El botó **Accepta i torna** tanca la finestra i torna al panell inicial.
+- Es mantenen les opcions de còpia, HTML, Word, TXT i impressió/PDF.
+- S'afegeix exportació i importació de projecte en JSON.
+- Es manté la importació de currículum propi en JSON.
 
-## Instal·lació a GitHub Pages
+## Publicació a GitHub Pages
 
-1. Puja tots els fitxers a l'arrel del repositori.
-2. Ves a `Settings > Pages`.
-3. Tria `Deploy from a branch`, branca `main`, carpeta `/root`.
-4. Obre la web amb `?v=7` per evitar memòria cau:
+1. Descomprimeix el ZIP.
+2. Puja tots els fitxers al repositori.
+3. Ves a `Settings > Pages`.
+4. Tria `Deploy from a branch`.
+5. Selecciona `main` i `/root`.
+6. Obre la web amb `?v=8` per evitar memòria cau antiga:
 
 ```text
-https://el-teu-usuari.github.io/DocentCat/?v=7
+https://el-teu-usuari.github.io/DocentCat/?v=8
 ```
 
-## Estructura mínima
+## Fitxers importants
 
-```text
-index.html
-styles.css
-app.js
-manifest.webmanifest
-service-worker.js
-curriculum-data.js
-data/curriculum-data.js
-icons/icon-192.png
-icons/icon-512.png
-.nojekyll
-```
+- `index.html`: estructura del panell i finestres.
+- `styles.css`: disseny responsive i botons quadrats.
+- `app.js`: generadors i lògica local.
+- `curriculum-data.js`: dades curriculars locals.
+- `data/curriculum-data.js`: còpia de compatibilitat.
+- `service-worker.js`: mode PWA i memòria cau.
+- `manifest.webmanifest`: configuració instal·lable.
 
-## Nota honesta
+## Nota curricular
 
-La base curricular inclosa és operativa i editable, però encara no és una transcripció oficial exhaustiva i revisada matèria per matèria. El següent pas és crear una versió STEM amb currículum complet i verificat per Matemàtiques, Matemàtiques A/B, Tecnologia i Digitalització, Tecnologia, Digitalització, Biologia i Geologia, Física i Química.
+La base curricular inclosa és editable i ampliable. Abans d'usar-la com a referència definitiva, convé contrastar CE, criteris d'avaluació i sabers amb la documentació oficial vigent del Departament d'Educació i amb els acords del centre.
