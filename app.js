@@ -1,5 +1,5 @@
 const $ = (id) => document.getElementById(id);
-const storeKey = 'docentcat-pwa-v8-compact-dashboard';
+const storeKey = 'docentcat-pwa-v9-curriculum-linked';
 const fields = ['stage','subject','level','templateType','topic','taskDescription','duration','groupProfile','language','saProduct','saContext','saMethod','saAssessment','sessionCount','sessionMinutes','sessionFocus','worksheetType','worksheetLevel','activityCount','rubricTask','rubricScale','rubricCriteria','studentWork','improvementGoal','feedbackTone','feedbackDetail','customCurriculum'];
 const multiFields = ['ceSelect','caSelect','sabersSelect'];
 const outputs = {};
@@ -28,12 +28,27 @@ const clean = s => String(s).replace(/[<>]/g,'');
 function lines(items){ return (items || []).map(x=>`- ${x}`).join('\n'); }
 function numbered(items){ return (items || []).map((x,i)=>`${i+1}. ${x}`).join('\n'); }
 function titleCase(s){ return s ? s[0].toUpperCase()+s.slice(1) : s; }
-function currentData(){ return curriculum[get('stage')]?.[get('level')]?.[get('subject')] || {ce:[], ca:[], sabers:[]}; }
+function currentData(){ return curriculum[get('stage')]?.[get('level')]?.[get('subject')] || {ce:[], ca:[], caByCe:{}, sabers:[]}; }
+function ceCodeFromText(text){ const m = String(text||'').match(/CE\s*(\d+)|^(\d+)[\.,]/i); return m ? `CE${m[1] || m[2]}` : ''; }
+function caCodeFromText(text){ const m = String(text||'').match(/CA\s*(\d+)\.(\d+)|^(\d+)\.(\d+)/i); return m ? `CE${m[1] || m[3]}` : ''; }
+function allCriteria(data){
+  if(data.caByCe && Object.keys(data.caByCe).length){ return Object.values(data.caByCe).flat(); }
+  return data.ca || [];
+}
+function criteriaForSelectedCompetencies(data){
+  const selected = selectedValues('ceSelect').map(ceCodeFromText).filter(Boolean);
+  if(data.caByCe && selected.length){
+    const result = selected.flatMap(code => data.caByCe[code] || []);
+    return result.length ? result : allCriteria(data);
+  }
+  return allCriteria(data);
+}
 function pickedCurriculum(){
   const data = currentData();
+  const availableCa = criteriaForSelectedCompetencies(data);
   return {
     ce: selectedValues('ceSelect').length ? selectedValues('ceSelect') : (data.ce || []).slice(0,2),
-    ca: selectedValues('caSelect').length ? selectedValues('caSelect') : (data.ca || []).slice(0,3),
+    ca: selectedValues('caSelect').length ? selectedValues('caSelect') : availableCa.slice(0,3),
     sabers: selectedValues('sabersSelect').length ? selectedValues('sabersSelect') : (data.sabers || []).slice(0,4)
   };
 }
@@ -79,8 +94,28 @@ function populateContextSelectors(){
   populateSelect($('templateType'), Object.keys(templates), true); if(!$('templateType').value) $('templateType').selectedIndex = 0;
   populateCurriculumLists(false); renderTemplatePreview();
 }
-function populateCurriculumLists(keep = true){ const data = currentData(); populateSelect($('ceSelect'), data.ce || [], keep); populateSelect($('caSelect'), data.ca || [], keep); populateSelect($('sabersSelect'), data.sabers || [], keep); }
-function selectCore(){ ['ceSelect','caSelect','sabersSelect'].forEach(id => Array.from($(id).options).forEach((opt,i)=> opt.selected = i < (id === 'sabersSelect' ? 4 : 2))); save(); toast('Selecció suggerida aplicada'); }
+function populateCurriculumLists(keep = true){
+  const data = currentData();
+  populateSelect($('ceSelect'), data.ce || [], keep);
+  populateSelect($('caSelect'), criteriaForSelectedCompetencies(data), keep);
+  populateSelect($('sabersSelect'), data.sabers || [], keep);
+  updateCurriculumHint();
+}
+function updateCriteriaFromCompetencies(keep = false){
+  const data = currentData();
+  populateSelect($('caSelect'), criteriaForSelectedCompetencies(data), keep);
+  updateCurriculumHint();
+}
+function updateCurriculumHint(){
+  const data = currentData();
+  const hint = $('curriculumLinkHint');
+  if(!hint) return;
+  const selected = selectedValues('ceSelect').map(ceCodeFromText).filter(Boolean);
+  if(data.caByCe && selected.length){ hint.textContent = `Criteris filtrats segons ${selected.join(', ')}.`; }
+  else if(data.caByCe){ hint.textContent = `Selecciona una o més CE per veure només els CA vinculats. Sense CE seleccionada es mostren tots.`; }
+  else { hint.textContent = `Aquesta matèria encara no té vinculació CE → CA carregada.`; }
+}
+function selectCore(){ ['ceSelect','sabersSelect'].forEach(id => Array.from($(id).options).forEach((opt,i)=> opt.selected = i < (id === 'sabersSelect' ? 4 : 2))); updateCriteriaFromCompetencies(false); Array.from($('caSelect').options).forEach((opt,i)=> opt.selected = i < 4); save(); toast('Selecció suggerida aplicada'); }
 function renderTemplatePreview(){
   const root = $('templatePreview'); if(!root) return; root.innerHTML = '';
   Object.entries(templates).forEach(([name, parts]) => { const card = document.createElement('button'); card.className = 'template-card'; card.type = 'button'; card.innerHTML = `<strong>${name}</strong><span>${parts.join(' · ')}</span>`; card.onclick = () => { $('templateType').value = name; renderTemplatePreview(); save(); }; if(get('templateType') === name) card.classList.add('selected'); root.appendChild(card); });
@@ -404,7 +439,7 @@ updateSummary(); }};
 $('exportAllBtn').onclick=()=>{ const all=Object.keys(outputs).map(k=>`# ${k.toUpperCase()}\n\n${outputs[k].textContent}`).join('\n\n---\n\n'); downloadHtml(`docentcat-export-${dateSlug()}.html`, all, 'Exportació DocentCat'); };
 $('fullPackBtn').onclick=()=>{ ['sa','sessions','worksheets','rubrics','feedback','templates'].forEach(k=>{ if(outputs[k]) outputs[k].textContent = clean(generators[k]()); }); save(); const all=Object.keys(outputs).map(k=>`# ${k.toUpperCase()}\n\n${outputs[k].textContent}`).join('\n\n---\n\n'); downloadHtml(`docentcat-paquet-complet-${dateSlug()}.html`, all, 'Paquet complet DocentCat'); };
 fields.forEach(f=>$(f)?.addEventListener('change',()=>{ if(['stage','level','subject'].includes(f)){ populateContextSelectors(); } if(f === 'templateType') renderTemplatePreview(); save(); }));
-multiFields.forEach(f=>$(f)?.addEventListener('change', save));
+multiFields.forEach(f=>$(f)?.addEventListener('change',()=>{ if(f === 'ceSelect') updateCriteriaFromCompetencies(false); save(); }));
 
 function updateSummary(){
   if($('summaryStage')) $('summaryStage').textContent = get('stage') || 'ESO';

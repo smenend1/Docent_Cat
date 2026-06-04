@@ -1366,3 +1366,103 @@ window.DOCENTCAT_TEMPLATES = {
     "Conclusió personal"
   ]
 };
+
+/* v9: Correccions curriculars verificades per a Tecnologia i Tecnologia i Digitalització.
+   Font de revisió: currículum d'ESO, annex 3. S'hi afegeix vinculació CE -> CA perquè els criteris s'actualitzin segons les competències triades.
+*/
+(function(){
+  const tdCE = [
+    "CE1. Buscar, analitzar i seleccionar la informació adequada, de manera crítica i segura, tot aplicant processos de recerca, mètodes d’anàlisi de productes i experimentant amb eines de simulació, per delimitar problemes tecnològics i proposar solucions a partir de la informació obtinguda.",
+    "CE2. Planificar, dissenyar i desenvolupar solucions a problemes tecnològics amb autonomia i actitud creativa, tot aplicant el procés tecnològic, coneixements interdisciplinaris i treballant de manera ordenada i cooperativa, per resoldre problemes o necessitats de manera eficaç, innovadora i sostenible.",
+    "CE3. Aplicar de manera apropiada diferents tècniques i coneixements interdisciplinaris, tot utilitzant operadors, sistemes tecnològics i eines, seguint la planificació i el disseny sostenible previ per construir solucions tecnològiques que donin resposta a necessitats en diferents contextos.",
+    "CE4. Descriure, representar i intercanviar idees o solucions a problemes tecnològics o digitals, utilitzant els mitjans de representació, simbologia i vocabulari adequats, així com els instruments i els recursos disponibles, utilitzant les eines digitals per argumentar, comunicar i difondre informació.",
+    "CE5. Desenvolupar algorismes i aplicacions informàtiques en diferents entorns, tot aplicant els principis del pensament computacional i incorporant les tecnologies emergents, per resoldre problemes concrets, automatitzar processos i aplicar-los en sistemes de control o robòtica.",
+    "CE6. Utilitzar els fonaments del funcionament dels dispositius i de les aplicacions habituals de l’entorn digital d’aprenentatge, analitzant-ne els components i les funcions i ajustant-los a les necessitats per fer-ne un ús més eficient i segur, per detectar i resoldre problemes tècnics senzills.",
+    "CE7. Fer ús ètic, sostenible i ecosocialment responsable de la tecnologia, identificant les repercussions i les aportacions, per valorar l’impacte del desenvolupament tecnològic a la societat i a l’entorn."
+  ];
+  const tdCaByCe = {
+    CE1: [
+      "CA1.1 Identificar i definir problemes o necessitats plantejades, tot cercant i contrastant la informació procedent de diferents fonts de manera crítica i segura, fent ús dels coneixements científics i tecnològics, avaluant-ne la fiabilitat i la pertinència.",
+      "CA1.2 Analitzar i examinar productes tecnològics d’ús habitual a través de l’anàlisi d’objectes i sistemes, fent ús dels coneixements científics i tecnològics, utilitzant, si s’escau, eines de simulació, en la construcció de coneixement."
+    ],
+    CE2: [
+      "CA2.1 Idear i dissenyar solucions tecnològiques originals a problemes plantejats, tot aplicant el procés tecnològic amb conceptes, tècniques i procediments interdisciplinaris amb actitud emprenedora, perseverant i creativa, documentant la informació en una memòria de projecte.",
+      "CA2.2 Seleccionar, planificar i organitzar el temps, els materials i les eines, així com les tasques necessàries per a la construcció d’una solució definida en un projecte, treballant individualment o en grup de manera cooperativa.",
+      "CA2.3 Aplicar criteris de sostenibilitat en el disseny de solucions tecnològiques considerant tot el cicle de vida útil de l’objecte."
+    ],
+    CE3: [
+      "CA3.1 Fabricar objectes o models mitjançant la manipulació i la conformació de materials, tot emprant instruments de mesura, eines i màquines adequades, posant en pràctica els fonaments d’estructures, mecanismes, electricitat i electrònica seguint les normes de seguretat i de salut.",
+      "CA3.2 Avaluar el resultat d’una construcció tot contrastant les seves funcions en relació amb els requeriments tècnics del projecte, mitjançant l’observació i l’ús d’instruments de mesura per validar el resultat final."
+    ],
+    CE4: [
+      "CA4.1 Documentar el procés de la creació d’un producte des del disseny fins a l’avaluació, elaborant la documentació tècnica i gràfica amb l’ajuda d’eines digitals, emprant els formats i el vocabulari tècnic adequats, de manera col·laborativa, tant presencialment com en remot.",
+      "CA4.2 Representar objectes, diagrames i esquemes tècnics mitjançant eines digitals col·laboratives, tot aplicant les normes tècniques corresponents.",
+      "CA4.3 Utilitzar dispositius i recursos digitals per a comunicar-se amb els altres, per difondre els propis aprenentatges i argumentar-los."
+    ],
+    CE5: [
+      "CA5.1 Descriure, interpretar i dissenyar solucions a problemes informàtics mitjançant algorismes i diagrames de flux, tot aplicant els elements i les tècniques de programació de manera creativa.",
+      "CA5.2 Programar aplicacions senzilles per a diferents dispositius (ordinadors, dispositius mòbils i altres) emprant els elements de programació de manera apropiada, fent servir el programari i els llenguatges de programació adients i mòduls d’intel·ligència artificial que afegeixin funcionalitats.",
+      "CA5.3 Automatitzar processos, màquines i objectes de manera autònoma, amb o sense connexió a Internet, mitjançant l’anàlisi, la construcció i la programació de robots i sistemes de control."
+    ],
+    CE6: [
+      "CA6.1 Fer un ús eficient i segur dels dispositius digitals d’ús quotidià en la resolució de problemes senzills, analitzant els components i els sistemes de comunicació, per identificar els riscos i adoptar mesures de seguretat per a la protecció de dades i equips.",
+      "CA6.2 Crear continguts, elaborar materials i difondre’ls en diferents plataformes, configurant correctament les eines digitals habituals de l’entorn d’aprenentatge, ajustant-les a les necessitats i respectant les llicències i els drets d’autoria.",
+      "CA6.3 Organitzar la informació de manera estructurada, aplicant tècniques d’emmagatzematge segur."
+    ],
+    CE7: [
+      "CA7.1 Identificar la influència de l’activitat tecnològica en la societat i en la sostenibilitat ambiental al llarg de la història, analitzant-ne les aportacions i les repercussions tot valorant-ne la importància per al desenvolupament sostenible.",
+      "CA7.2 Fer un ús responsable i ètic de les tecnologies emergents, tot identificant les seves aportacions al benestar, a la igualtat social i a la reducció de l’impacte ambiental.",
+      "CA7.3 Valorar l’economia circular com una aportació tecnològica i social a la sostenibilitat per reduir la necessitat de matèries primeres i aconseguir la reducció de residus."
+    ]
+  };
+  const tecCE = [
+    "CE1. Identificar i proposar problemes tecnològics amb iniciativa i creativitat, tot estudiant les necessitats de l’entorn proper, aplicant estratègies i processos col·laboratius i iteratius relatius a projectes, per idear i planificar solucions de manera eficient i innovadora.",
+    "CE2. Aplicar diferents tècniques i coneixements interdisciplinaris utilitzant procediments i recursos tecnològics tot preveient el cicle de vida dels productes per construir solucions tecnològiques sostenibles que donin resposta a necessitats plantejades.",
+    "CE3. Comunicar, argumentar i difondre idees i solucions tecnològiques en diferents espais virtuals, emprant diversos recursos tot aplicant els elements i les tècniques necessàries per intercanviar la informació i fomentar el treball en equip.",
+    "CE4. Desenvolupar solucions sostenibles a problemes plantejats que incorporin l’automatització i les tecnologies emergents, per dissenyar i construir sistemes de control programables i robòtics.",
+    "CE5. Emprar les eines digitals de disseny i fabricació, adaptant-les i configurant-les a les necessitats tot aplicant els coneixements interdisciplinaris, per a una producció més eficient i sostenible.",
+    "CE6. Analitzar processos tecnològics, valorant l’impacte en la societat i l’entorn, tot aplicant criteris de sostenibilitat, per fer un ús ètic i ecosocialment responsable de la tecnologia."
+  ];
+  const tecCaByCe = {
+    CE1: [
+      "CA1.1 Idear i planificar solucions tecnològiques emprenedores que generin un valor a la comunitat, a partir de l’observació i l’anàlisi de l’entorn més proper, tot estudiant les necessitats, els requisits i les possibilitats de millora.",
+      "CA1.2 Aplicar, amb iniciativa, estratègies col·laboratives de gestió de projectes amb perspectiva interdisciplinària, seguint un procés iteratiu de validació, des de la fase d’ideació fins a la resolució de problemes.",
+      "CA1.3 Desenvolupar la gestió del projecte de manera creativa, aplicant estratègies i tècniques col·laboratives, així com mètodes de recerca per a la ideació de solucions eficients, innovadores i respectuoses amb el medi ambient."
+    ],
+    CE2: [
+      "CA2.1 Analitzar el disseny d’un producte que doni resposta a una necessitat plantejada, avaluant-ne la demanda, l’evolució i la previsió de fi del cicle de vida amb criteri ètic, sostenible i responsable.",
+      "CA2.2 Fabricar productes i solucions tecnològiques, fent ús del disseny assistit, utilitzant les diferents tècniques d’elaboració manual, mecànica i digital, emprant de manera adequada els diferents materials i recursos mecànics, elèctrics, electrònics i digitals.",
+      "CA2.3 Argumentar les solucions tecnològiques aportades a les necessitats plantejades, valorant-ne la viabilitat econòmica, l’ús funcional, sostenible i eficient."
+    ],
+    CE3: [
+      "CA3.1 Intercanviar informació i fomentar el treball en equip de manera assertiva, emprant les eines digitals, el vocabulari tècnic, símbols i esquemes de sistemes tecnològics apropiats.",
+      "CA3.2 Presentar i difondre les propostes o solucions tecnològiques de manera concreta, emprant l’entonació, l’expressió, l’adaptació del discurs i del temps, usant un llenguatge inclusiu i lliure d’estereotips sexistes."
+    ],
+    CE4: [
+      "CA4.1 Dissenyar, construir, controlar i/o simular sistemes automàtics programables i robots que siguin capaços de fer tasques de forma autònoma, aplicant coneixements de mecànica, electrònica, pneumàtica i components dels sistemes de control, així com altres coneixements interdisciplinaris.",
+      "CA4.2 Integrar a les màquines i sistemes tecnològics aplicacions digitals emergents de control i simulació com Internet de les coses, tractament massiu de dades (big data) i intel·ligència artificial amb sentit crític, ètic i sostenible."
+    ],
+    CE5: [
+      "CA5.1 Resoldre tasques proposades de manera eficient mitjançant l’ús i la configuració de diferents aplicacions i eines digitals, tot aplicant coneixements interdisciplinaris amb autonomia.",
+      "CA5.2 Utilitzar en el disseny de solucions, eines de representació en tres dimensions i d’experimentació virtual mitjançant simuladors, per a la construcció del coneixement tecnològic.",
+      "CA5.3 Emprar diferents gestors de presentació, eines de difusió o publicació de la informació per a la realització de tasques col·laboratives.",
+      "CA5.4 Configurar programes o aplicacions informàtiques per al control de diferents automatismes."
+    ],
+    CE6: [
+      "CA6.1 Fer un ús responsable de la tecnologia, mitjançant l’anàlisi i l’aplicació de criteris de sostenibilitat en la selecció de materials, el disseny i els processos de fabricació dels productes tecnològics, tot minimitzant l’impacte en la societat i el planeta.",
+      "CA6.2 Analitzar els beneficis i valorar la contribució de les tecnologies al desenvolupament sostenible i la cura de l’entorn, que aporten l’arquitectura bioclimàtica, les energies renovables i la mobilitat eficient.",
+      "CA6.3 Identificar i valorar la repercussió i els beneficis del desenvolupament de projectes tecnològics de caràcter social per mitjà de comunitats obertes, accions de voluntariat o projectes de servei a la comunitat."
+    ]
+  };
+  function flat(map){ return Object.values(map).flat(); }
+  function apply(level, subject, ce, caByCe){
+    const node = window.DOCENTCAT_CURRICULUM?.ESO?.[level]?.[subject];
+    if(!node) return;
+    node.ce = ce;
+    node.caByCe = caByCe;
+    node.ca = flat(caByCe);
+    node.font = "Currículum d'ESO, annex 3. Revisió DocentCat v9.";
+  }
+  ["1r ESO","2n ESO","3r ESO"].forEach(level => apply(level, "Tecnologia i Digitalització", tdCE, tdCaByCe));
+  apply("4t ESO", "Tecnologia", tecCE, tecCaByCe);
+})();
