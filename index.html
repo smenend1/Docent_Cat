@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="theme-color" content="#253b80" />
-  <title>DocentCat v11 · Banc d’exercicis STEM</title>
+  <title>DocentCat v12 · Selector d’exercicis STEM</title>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="stylesheet" href="styles.css" />
 </head>
@@ -12,8 +12,8 @@
   <header class="app-header compact-header">
     <div>
       <p class="eyebrow">PWA per a docents de secundària · Catalunya</p>
-      <h1>DocentCat <span class="version-badge">v11</span></h1>
-      <p class="subtitle">Panell compacte amb botons quadrats. Versió v11 amb banc local d’exercicis STEM per matèria, curs i tema curricular.</p>
+      <h1>DocentCat <span class="version-badge">v12</span></h1>
+      <p class="subtitle">Panell compacte amb botons quadrats. Versió v12 amb selector visible d’exercicis STEM del banc local per triar-los abans de generar la fitxa.</p>
     </div>
     <div class="header-actions">
       <button id="installBtn" class="ghost" hidden>Instal·la</button>
@@ -54,7 +54,7 @@
         <div><strong>Matèria</strong><span id="summarySubject">—</span></div>
         <div><strong>Tema</strong><span id="summaryTopic">—</span></div>
       </div>
-      <p class="hint">Versió carregada: v11. Els resultats són editables dins de cada finestra abans de copiar, baixar o imprimir.</p>
+      <p class="hint">Versió carregada: v12. Els resultats són editables dins de cada finestra abans de copiar, baixar o imprimir.</p>
     </section>
   </main>
 
@@ -139,7 +139,21 @@
         <label>Nivell<select id="worksheetLevel"><option>Bàsic</option><option>Mitjà</option><option>Avançat</option><option>Multinivell</option></select></label>
         <label>Nombre d’activitats <input id="activityCount" type="number" min="3" max="20" value="8" /></label>
       </div>
-      <div class="modal-actions"><button data-generate="worksheets" class="primary">Genera fitxa</button><button class="ghost dark" data-close-modal>Accepta i torna</button></div>
+      <section class="exercise-picker" aria-labelledby="exercisePickerTitle">
+        <div class="exercise-picker-head">
+          <div>
+            <h3 id="exercisePickerTitle">Banc d’exercicis STEM</h3>
+            <p id="exercisePickerHint">Actualitza el llistat després de triar curs, matèria, sabers i tema. Després marca els exercicis que vols incloure a la fitxa.</p>
+          </div>
+          <div class="exercise-picker-actions">
+            <button id="refreshExercisesBtn" type="button" class="ghost">Actualitza exercicis</button>
+            <button id="selectSuggestedExercisesBtn" type="button" class="ghost">Marca suggerits</button>
+            <button id="clearSelectedExercisesBtn" type="button" class="ghost danger">Desmarca</button>
+          </div>
+        </div>
+        <div id="exerciseBankList" class="exercise-bank-list">Encara no has actualitzat el banc d’exercicis.</div>
+      </section>
+      <div class="modal-actions"><button data-generate="worksheets" class="primary">Genera fitxa amb els exercicis marcats</button><button class="ghost dark" data-close-modal>Accepta i torna</button></div>
       <output-card data-output="worksheets"></output-card>
     </div>
   </div>

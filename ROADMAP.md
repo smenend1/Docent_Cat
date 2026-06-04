@@ -1,6 +1,6 @@
 # Roadmap DocentCat
 
-## v11 feta
+## v12 feta
 - Banc local d’exercicis STEM.
 - Integració del banc en la generació de fitxes i seqüències.
 

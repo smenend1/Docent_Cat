@@ -1,8 +1,8 @@
-# DocentCat PWA v11 · Banc d’exercicis STEM
+# DocentCat PWA v12 · Selector d’exercicis STEM
 
 Versió per GitHub Pages amb panell compacte, currículum STEM i un banc local d’exercicis per matèria, curs i tema curricular.
 
-## Novetats v11
+## Novetats v12
 
 - Nou fitxer `exercise-bank.js` amb 89 temes STEM i 356 exercicis tipus originals.
 - Matèries cobertes: Matemàtiques, Matemàtiques A, Matemàtiques B, Tecnologia i Digitalització, Tecnologia, Digitalització, Biologia i Geologia, Física i Química.

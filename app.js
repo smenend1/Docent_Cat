@@ -1,5 +1,5 @@
 const $ = (id) => document.getElementById(id);
-const storeKey = 'docentcat-pwa-v11-exercise-bank';
+const storeKey = 'docentcat-pwa-v12-exercise-selector';
 const fields = ['stage','subject','level','templateType','topic','taskDescription','duration','groupProfile','language','saProduct','saContext','saMethod','saAssessment','sessionCount','sessionMinutes','sessionFocus','worksheetType','worksheetLevel','activityCount','rubricTask','rubricScale','rubricCriteria','studentWork','improvementGoal','feedbackTone','feedbackDetail','customCurriculum'];
 const multiFields = ['ceSelect','caSelect','sabersSelect'];
 const outputs = {};
@@ -51,7 +51,7 @@ function pickedCurriculum(){
   const availableCa = criteriaForSelectedCompetencies(data);
   return {
     ce: selectedCe.length ? selectedCe : (data.ce || []).slice(0,2),
-    // v11: si hi ha diverses CE seleccionades i l'usuari no marca manualment els CA,
+    // v12: si hi ha diverses CE seleccionades i l'usuari no marca manualment els CA,
     // no retallem als primers 3 criteris, perquè això feia aparèixer només CA1.x.
     // En aquest cas s'inclouen tots els CA vinculats a les CE triades.
     ca: selectedCa.length ? uniqueList(selectedCa) : (selectedCe.length ? uniqueList(availableCa) : uniqueList(availableCa).slice(0,3)),
@@ -325,6 +325,100 @@ function bankExercises(c, count){
   return items.length ? items : null;
 }
 
+function bankExerciseObjects(c){
+  const themes = subjectBankThemes(c);
+  if(!themes || !themes.length) return [];
+  const ranked = themes.map((t, themeIndex) => ({t, themeIndex, score: scoreTheme(t,c)})).sort((a,b)=>b.score-a.score);
+  const ordered = ranked.filter(x=>x.score>0).concat(ranked.filter(x=>x.score<=0));
+  const rows = [];
+  ordered.forEach(({t, themeIndex, score}) => {
+    (t.exercises || []).forEach((ex, exerciseIndex) => {
+      const base = normText(`${c.etapa}|${c.curs}|${c.materia}|${t.theme}|${exerciseIndex}|${ex.statement}`);
+      rows.push({
+        id: `ex-${themeIndex}-${exerciseIndex}-${hashCode(base)}`,
+        theme: t.theme,
+        type: ex.type || 'activitat',
+        level: ex.level || 'estàndard',
+        statement: ex.statement,
+        solutionHint: ex.solutionHint || '',
+        score
+      });
+    });
+  });
+  return rows;
+}
+function hashCode(str){
+  let h=0;
+  for(let i=0;i<str.length;i++){ h=((h<<5)-h)+str.charCodeAt(i); h|=0; }
+  return Math.abs(h).toString(36);
+}
+function selectedExerciseLines(){
+  const boxes = Array.from(document.querySelectorAll('#exerciseBankList input[type="checkbox"]:checked'));
+  if(!boxes.length) return null;
+  return boxes.map((box, i) => {
+    const data = JSON.parse(box.dataset.exercise || '{}');
+    let line = `${i+1}. [${data.type || 'activitat'} · ${data.level || 'estàndard'}] ${data.statement || ''}`;
+    if(data.solutionHint) line += `\n   Orientació de solució/correcció: ${data.solutionHint}`;
+    return line;
+  });
+}
+function renderExerciseBank(){
+  const list = $('exerciseBankList');
+  const hint = $('exercisePickerHint');
+  if(!list) return;
+  const c = context();
+  const rows = bankExerciseObjects(c);
+  const max = Math.max(12, Math.min(60, (Number(get('activityCount')) || 8) * 4));
+  const visible = rows.slice(0, max);
+  if(!visible.length){
+    list.innerHTML = '<div class="exercise-empty">No he trobat exercicis del banc per a aquesta combinació. Revisa curs, matèria i tema, o escriu una consigna més concreta.</div>';
+    if(hint) hint.textContent = 'No hi ha coincidències del banc per aquesta selecció.';
+    return;
+  }
+  const byTheme = new Map();
+  visible.forEach(row => { if(!byTheme.has(row.theme)) byTheme.set(row.theme, []); byTheme.get(row.theme).push(row); });
+  list.innerHTML = '';
+  for(const [theme, items] of byTheme.entries()){
+    const title = document.createElement('div');
+    title.className = 'exercise-theme-title';
+    title.textContent = theme;
+    list.appendChild(title);
+    items.forEach((row) => {
+      const label = document.createElement('label');
+      label.className = 'exercise-option';
+      const input = document.createElement('input');
+      input.type = 'checkbox';
+      input.value = row.id;
+      input.dataset.exercise = JSON.stringify(row);
+      input.checked = rows.indexOf(row) < (Number(get('activityCount')) || 8);
+      input.addEventListener('change', updateExercisePickerHint);
+      const body = document.createElement('div');
+      const safeHint = row.solutionHint ? `<small>Orientació: ${row.solutionHint}</small>` : '';
+      body.innerHTML = `<strong>${row.statement}</strong><span class="exercise-badge">${row.type}</span><span class="exercise-badge">${row.level}</span>${row.score>0 ? '<span class="exercise-badge">coincidència</span>' : ''}${safeHint}`;
+      label.append(input, body);
+      list.appendChild(label);
+    });
+  }
+  updateExercisePickerHint();
+}
+function updateExercisePickerHint(){
+  const hint = $('exercisePickerHint');
+  if(!hint) return;
+  const total = document.querySelectorAll('#exerciseBankList input[type="checkbox"]').length;
+  const selected = document.querySelectorAll('#exerciseBankList input[type="checkbox"]:checked').length;
+  hint.textContent = `${total} exercicis visibles del banc. Has marcat ${selected}. En generar la fitxa, s'inclouran exactament els exercicis marcats. Si no marques cap, s'usarà la generació automàtica.`;
+}
+function selectSuggestedExercises(){
+  const count = Number(get('activityCount')) || 8;
+  const boxes = Array.from(document.querySelectorAll('#exerciseBankList input[type="checkbox"]'));
+  boxes.forEach((box,i)=> box.checked = i < count);
+  updateExercisePickerHint();
+}
+function clearSelectedExercises(){
+  document.querySelectorAll('#exerciseBankList input[type="checkbox"]').forEach(box => box.checked = false);
+  updateExercisePickerHint();
+}
+
 function exerciseItems(c, count){
   return bundledExercises(c, count) || bankExercises(c, count) || exerciseItemsBasic(c, count, 0);
 }
@@ -441,8 +535,10 @@ const generators = {
   worksheets(){
     const c=context(), type=get('worksheetType'), level=get('worksheetLevel');
     const count=requestedCount(c, Math.max(3,Math.min(20,Number(get('activityCount'))||8)));
-    const acts=exerciseItems(c,count);
-    return `${commonHeader(c)}\nFITXA DE TREBALL\n\nDADES ESPECÍFIQUES DEL MÒDUL FITXES\nTipus de fitxa: ${type}\nNivell: ${level}\nNombre d'activitats: ${count}\n\nTítol: ${titleCase(c.tema)}\nTipus: ${type}\nNivell: ${level}\nNom: _______________________   Data: ___________\n\nObjectiu de la fitxa\nAplicar ${c.tema.toLowerCase()} mitjançant activitats concretes, graduades i vinculades als sabers seleccionats.\n\nConsigna de treball\n${c.descripcio || 'Resol les activitats, justifica les respostes i revisa-les amb els criteris d’èxit.'}\n\nAbans de començar\n1. Escriu què creus que ja saps sobre el tema.\n2. Marca dues paraules clau que et semblen importants.\n3. Formula una pregunta que hauràs de poder respondre al final.\n\nActivitats específiques\n${acts.join('\n')}\n\nRepte final\nCrea una mini tasca nova sobre ${c.tema.toLowerCase()} per a un company/a. Ha d'incloure enunciat, dades o context, solució esperada i criteri de correcció.\n\nCriteris d'èxit\n${lines(c.ca.length ? c.ca : ['Resposta completa','Procediment justificat','Ús de vocabulari específic'])}\n\nAdaptació bàsica\n- Fes primer les activitats 1, 2, 3 i una activitat final triada pel docent.\n- Usa una plantilla amb: dades/conceptes, procediment, resposta i comprovació.\n- Dona banc de paraules o fórmules quan calgui.\n\nAmpliació\n- Modifica una activitat perquè tingui més d'una solució possible.\n- Relaciona el resultat amb una situació real del centre, del municipi o de Catalunya.\n\n${solutionGuide(c,count)}`;},
+    const selectedActs = selectedExerciseLines();
+    const acts = selectedActs && selectedActs.length ? selectedActs : exerciseItems(c,count);
+    const sourceNote = selectedActs && selectedActs.length ? `Exercicis triats manualment del banc STEM: ${selectedActs.length}` : `Exercicis generats automàticament: ${count}`;
+    return `${commonHeader(c)}\nFITXA DE TREBALL\n\nDADES ESPECÍFIQUES DEL MÒDUL FITXES\nTipus de fitxa: ${type}\nNivell: ${level}\nNombre d'activitats: ${count}\nOrigen de les activitats: ${sourceNote}\n\nTítol: ${titleCase(c.tema)}\nTipus: ${type}\nNivell: ${level}\nNom: _______________________   Data: ___________\n\nObjectiu de la fitxa\nAplicar ${c.tema.toLowerCase()} mitjançant activitats concretes, graduades i vinculades als sabers seleccionats.\n\nConsigna de treball\n${c.descripcio || 'Resol les activitats, justifica les respostes i revisa-les amb els criteris d’èxit.'}\n\nAbans de començar\n1. Escriu què creus que ja saps sobre el tema.\n2. Marca dues paraules clau que et semblen importants.\n3. Formula una pregunta que hauràs de poder respondre al final.\n\nActivitats específiques\n${acts.join('\n')}\n\nRepte final\nCrea una mini tasca nova sobre ${c.tema.toLowerCase()} per a un company/a. Ha d'incloure enunciat, dades o context, solució esperada i criteri de correcció.\n\nCriteris d'èxit\n${lines(c.ca.length ? c.ca : ['Resposta completa','Procediment justificat','Ús de vocabulari específic'])}\n\nAdaptació bàsica\n- Fes primer les activitats 1, 2, 3 i una activitat final triada pel docent.\n- Usa una plantilla amb: dades/conceptes, procediment, resposta i comprovació.\n- Dona banc de paraules o fórmules quan calgui.\n\nAmpliació\n- Modifica una activitat perquè tingui més d'una solució possible.\n- Relaciona el resultat amb una situació real del centre, del municipi o de Catalunya.\n\n${solutionGuide(c,count)}`;},
   rubrics(){
     const c=context(), task=get('rubricTask')||'producte o tasca final', scale=get('rubricScale'), count=Math.max(3,Math.min(8,Number(get('rubricCriteria'))||5));
     const criteria = [...c.ca, 'Precisió conceptual i ús de vocabulari específic', 'Justificació del procediment o de les decisions', 'Comunicació del procés i del resultat', 'Autonomia, revisió i millora'].slice(0,count);
@@ -501,8 +597,8 @@ $('clearBtn').onclick=()=>{ if(confirm('Vols esborrar les dades locals de Docent
 updateSummary(); }};
 $('exportAllBtn').onclick=()=>{ const all=Object.keys(outputs).map(k=>`# ${k.toUpperCase()}\n\n${outputs[k].textContent}`).join('\n\n---\n\n'); downloadHtml(`docentcat-export-${dateSlug()}.html`, all, 'Exportació DocentCat'); };
 $('fullPackBtn').onclick=()=>{ ['sa','sessions','worksheets','rubrics','feedback','templates'].forEach(k=>{ if(outputs[k]) outputs[k].textContent = clean(generators[k]()); }); save(); const all=Object.keys(outputs).map(k=>`# ${k.toUpperCase()}\n\n${outputs[k].textContent}`).join('\n\n---\n\n'); downloadHtml(`docentcat-paquet-complet-${dateSlug()}.html`, all, 'Paquet complet DocentCat'); };
-fields.forEach(f=>$(f)?.addEventListener('change',()=>{ if(['stage','level','subject'].includes(f)){ populateContextSelectors(); } if(f === 'templateType') renderTemplatePreview(); save(); }));
-multiFields.forEach(f=>$(f)?.addEventListener('change',()=>{ if(f === 'ceSelect') updateCriteriaFromCompetencies(false); save(); }));
+fields.forEach(f=>$(f)?.addEventListener('change',()=>{ if(['stage','level','subject'].includes(f)){ populateContextSelectors(); } if(f === 'templateType') renderTemplatePreview(); if(['stage','level','subject','topic','taskDescription','activityCount'].includes(f)) renderExerciseBank(); save(); }));
+multiFields.forEach(f=>$(f)?.addEventListener('change',()=>{ if(f === 'ceSelect') updateCriteriaFromCompetencies(false); if(['ceSelect','caSelect','sabersSelect'].includes(f)) renderExerciseBank(); save(); }));
 
 function updateSummary(){
   if($('summaryStage')) $('summaryStage').textContent = get('stage') || 'ESO';
@@ -514,7 +610,7 @@ function openModal(id){ const modal=$(id); if(!modal) return; modal.hidden=false
 function closeModal(modal){ if(!modal) return; modal.hidden=true; document.body.classList.remove('modal-open'); updateSummary(); }
 function exportStateJson(){ const blob=new Blob([JSON.stringify(collectState(), null, 2)],{type:'application/json;charset=utf-8'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`docentcat-projecte-${dateSlug()}.json`; a.click(); URL.revokeObjectURL(a.href); }
 function importStateJson(file){ if(!file) return; const reader=new FileReader(); reader.onload=()=>{ try{ const data=JSON.parse(reader.result); localStorage.setItem(storeKey, JSON.stringify(data)); toast('Projecte JSON importat'); setTimeout(()=>location.reload(),500); }catch{ toast('JSON de projecte no vàlid'); } }; reader.readAsText(file); }
-for(const btn of document.querySelectorAll('[data-open-modal]')) btn.addEventListener('click',()=>openModal(btn.dataset.openModal));
+for(const btn of document.querySelectorAll('[data-open-modal]')) btn.addEventListener('click',()=>{ openModal(btn.dataset.openModal); if(btn.dataset.openModal === 'modal-worksheets') renderExerciseBank(); });
 for(const btn of document.querySelectorAll('[data-close-modal]')) btn.addEventListener('click',()=>closeModal(btn.closest('.modal')));
 for(const modal of document.querySelectorAll('.modal')) modal.addEventListener('click',e=>{ if(e.target===modal) closeModal(modal); });
 window.addEventListener('keydown',e=>{ if(e.key==='Escape'){ const open=document.querySelector('.modal:not([hidden])'); if(open) closeModal(open); }});
@@ -522,6 +618,10 @@ $('exportAllBtnMirror')?.addEventListener('click',()=>$('exportAllBtn')?.click()
 $('fullPackBtnMirror')?.addEventListener('click',()=>$('fullPackBtn')?.click());
 $('exportStateBtn')?.addEventListener('click',exportStateJson);
 $('importStateFile')?.addEventListener('change',e=>importStateJson(e.target.files?.[0]));
+$('refreshExercisesBtn')?.addEventListener('click',renderExerciseBank);
+$('selectSuggestedExercisesBtn')?.addEventListener('click',selectSuggestedExercises);
+$('clearSelectedExercisesBtn')?.addEventListener('click',clearSelectedExercises);
+$('activityCount')?.addEventListener('change',renderExerciseBank);
 
 let deferredPrompt; window.addEventListener('beforeinstallprompt', e=>{ e.preventDefault(); deferredPrompt=e; $('installBtn').hidden=false; });
 $('installBtn').onclick=async()=>{ if(deferredPrompt){ deferredPrompt.prompt(); await deferredPrompt.userChoice; deferredPrompt=null; $('installBtn').hidden=true; }};
