@@ -1,6 +1,6 @@
-const CACHE = 'docentcat-v10-2-header-fix';
+const CACHE = 'docentcat-v11-exercise-bank';
 const ASSETS = [
-  './styles.css','./app.js','./manifest.webmanifest','./curriculum-data.js','./data/curriculum-data.js','./icons/icon-192.png','./icons/icon-512.png'
+  './styles.css','./app.js','./manifest.webmanifest','./curriculum-data.js','./data/curriculum-data.js','./exercise-bank.js','./data/exercise-bank.js','./icons/icon-192.png','./icons/icon-512.png'
 ];
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(ASSETS)));
@@ -25,4 +25,4 @@ self.addEventListener('fetch', event => {
   })));
 });
 
-// DocentCat v10.2 header refresh + cache cleanup
+// DocentCat v11 exercise bank + cache cleanup

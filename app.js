@@ -1,5 +1,5 @@
 const $ = (id) => document.getElementById(id);
-const storeKey = 'docentcat-pwa-v10-2-ca-multiple-fix';
+const storeKey = 'docentcat-pwa-v11-exercise-bank';
 const fields = ['stage','subject','level','templateType','topic','taskDescription','duration','groupProfile','language','saProduct','saContext','saMethod','saAssessment','sessionCount','sessionMinutes','sessionFocus','worksheetType','worksheetLevel','activityCount','rubricTask','rubricScale','rubricCriteria','studentWork','improvementGoal','feedbackTone','feedbackDetail','customCurriculum'];
 const multiFields = ['ceSelect','caSelect','sabersSelect'];
 const outputs = {};
@@ -51,7 +51,7 @@ function pickedCurriculum(){
   const availableCa = criteriaForSelectedCompetencies(data);
   return {
     ce: selectedCe.length ? selectedCe : (data.ce || []).slice(0,2),
-    // v10.2: si hi ha diverses CE seleccionades i l'usuari no marca manualment els CA,
+    // v11: si hi ha diverses CE seleccionades i l'usuari no marca manualment els CA,
     // no retallem als primers 3 criteris, perquè això feia aparèixer només CA1.x.
     // En aquest cas s'inclouen tots els CA vinculats a les CE triades.
     ca: selectedCa.length ? uniqueList(selectedCa) : (selectedCe.length ? uniqueList(availableCa) : uniqueList(availableCa).slice(0,3)),
@@ -270,8 +270,63 @@ function exerciseItemsBasic(c, count, offset=0){
   }
   return list;
 }
+
+function normText(x){ return String(x || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,''); }
+function courseBank(c){ return (((window.DOCENTCAT_EXERCISE_BANK || {}).ESO || {})[c.curs] || {}); }
+function subjectBankThemes(c){
+  const byCourse = courseBank(c);
+  if(byCourse[c.materia]) return byCourse[c.materia];
+  const target = normText(c.materia);
+  const key = Object.keys(byCourse).find(k => normText(k) === target || target.includes(normText(k)) || normText(k).includes(target));
+  return key ? byCourse[key] : [];
+}
+function scoreTheme(theme, c){
+  const hay = normText(`${c.tema} ${c.descripcio} ${c.sabers.join(' ')} ${c.ce.join(' ')} ${c.ca.join(' ')}`);
+  const themeTxt = normText(theme.theme + ' ' + (theme.keywords || []).join(' '));
+  let score = 0;
+  for(const token of themeTxt.match(/[a-z0-9]{4,}/g) || []) if(hay.includes(token)) score += 2;
+  for(const saber of c.sabers || []){
+    const ns = normText(saber);
+    for(const token of ns.match(/[a-z0-9]{5,}/g) || []) if(themeTxt.includes(token)) score += 3;
+  }
+  if(hay && themeTxt && (hay.includes(themeTxt.slice(0,12)) || themeTxt.includes(normText(c.tema).slice(0,12)))) score += 4;
+  return score;
+}
+function bankExercises(c, count){
+  const themes = subjectBankThemes(c);
+  if(!themes || !themes.length) return null;
+  const ranked = themes.map(t => ({t, score: scoreTheme(t,c)})).sort((a,b)=>b.score-a.score);
+  const selectedThemes = ranked.filter(x => x.score > 0).slice(0,4).map(x=>x.t);
+  const picked = selectedThemes.length ? selectedThemes : ranked.slice(0,3).map(x=>x.t);
+  const items=[]; let n=1;
+  for(const theme of picked){
+    if(n <= count) items.push(`Tema curricular: ${theme.theme}`);
+    for(const ex of theme.exercises || []){
+      if(n > count) break;
+      let line = `${n}. [${ex.type || 'activitat'} · ${ex.level || 'estàndard'}] ${ex.statement}`;
+      if(ex.solutionHint) line += `\n   Orientació de solució/correcció: ${ex.solutionHint}`;
+      items.push(line); n++;
+    }
+    if(n > count) break;
+  }
+  // If count asks for more than the selected themes provide, continue cycling all subject themes.
+  if(n <= count){
+    for(const theme of themes){
+      for(const ex of theme.exercises || []){
+        if(n > count) break;
+        if(items.some(x => x.includes(ex.statement.slice(0,40)))) continue;
+        let line = `${n}. [${ex.type || 'activitat'} · ${ex.level || 'estàndard'}] ${ex.statement}`;
+        if(ex.solutionHint) line += `\n   Orientació de solució/correcció: ${ex.solutionHint}`;
+        items.push(line); n++;
+      }
+      if(n > count) break;
+    }
+  }
+  return items.length ? items : null;
+}
+
 function exerciseItems(c, count){
-  return bundledExercises(c, count) || exerciseItemsBasic(c, count, 0);
+  return bundledExercises(c, count) || bankExercises(c, count) || exerciseItemsBasic(c, count, 0);
 }
 function solutionGuide(c, count){
   const family=subjectFamily(c);

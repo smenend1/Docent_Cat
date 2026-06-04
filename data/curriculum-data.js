@@ -1468,7 +1468,7 @@ window.DOCENTCAT_TEMPLATES = {
 })();
 
 
-/* DocentCat v10: revisió STEM CE/CA vinculats.
+/* DocentCat v11: revisió STEM CE/CA vinculats + banc exercicis.
    Actualitza Matemàtiques, Matemàtiques A/B, Biologia i Geologia i Física i Química.
    Font base: currículum ESO Catalunya, annex 3, i documents XTEC de competències/criteris i sabers.
 */
@@ -1483,8 +1483,8 @@ window.DOCENTCAT_TEMPLATES = {
     node.caByCe = caByCe;
     node.ca = flat(caByCe);
     if(sabers && sabers.length) node.sabers = sabers;
-    node.font = font || "Currículum d'ESO de Catalunya, annex 3. Revisió DocentCat v10.";
-    node.revisio = "DocentCat v10: CE i CA vinculats per competència específica.";
+    node.font = font || "Currículum d'ESO de Catalunya, annex 3. Revisió DocentCat v11.";
+    node.revisio = "DocentCat v11: CE i CA vinculats per competència específica.";
   }
 
   const matCE = [
@@ -1618,12 +1618,12 @@ window.DOCENTCAT_TEMPLATES = {
   const fqSabers4 = ["Treball científic: disseny experimental, tractament de dades, incertesa, seguretat, comunicació científica i argumentació.", "Matèria i estructura: models atòmics, taula periòdica, enllaç, formulació i nomenclatura segons el nivell.", "Canvi químic: reaccions, equacions, estequiometria bàsica, energia de les reaccions, àcids i bases o processos d’interès.", "Moviment i forces: cinemàtica, dinàmica, lleis de Newton, forces, pressió i aplicacions tecnològiques.", "Energia: treball, potència, energia mecànica, electricitat, circuits, eficiència energètica i fonts renovables.", "Física i química en context: atmosfera, aigua, sòl, materials, salut, sostenibilitat, riscos i presa de decisions informada." ];
 
   ["1r ESO","2n ESO","3r ESO"].forEach(level => {
-    apply(level, "Matemàtiques", matCE, matCa, matSabers123, "Currículum ESO Catalunya, Matemàtiques. CE i CA revisats DocentCat v10.");
-    apply(level, "Biologia i Geologia", bgCE, bgCa123, bgSabers123, "Currículum ESO Catalunya, Biologia i Geologia. CE i CA revisats DocentCat v10.");
-    apply(level, "Física i Química", fqCE, fqCa123, fqSabers123, "Currículum ESO Catalunya, Física i Química. CE i CA revisats DocentCat v10.");
+    apply(level, "Matemàtiques", matCE, matCa, matSabers123, "Currículum ESO Catalunya, Matemàtiques. CE i CA revisats DocentCat v11.");
+    apply(level, "Biologia i Geologia", bgCE, bgCa123, bgSabers123, "Currículum ESO Catalunya, Biologia i Geologia. CE i CA revisats DocentCat v11.");
+    apply(level, "Física i Química", fqCE, fqCa123, fqSabers123, "Currículum ESO Catalunya, Física i Química. CE i CA revisats DocentCat v11.");
   });
-  apply("4t ESO", "Matemàtiques A", matCE, matCa, matSabers4, "Currículum ESO Catalunya, Matemàtiques A/B 4t ESO. CE i CA revisats DocentCat v10.");
-  apply("4t ESO", "Matemàtiques B", matCE, matCa, matSabers4, "Currículum ESO Catalunya, Matemàtiques A/B 4t ESO. CE i CA revisats DocentCat v10.");
-  apply("4t ESO", "Biologia i Geologia", bgCE, bgCa4, bgSabers4, "Currículum ESO Catalunya, Biologia i Geologia 4t ESO. CE i CA revisats DocentCat v10.");
-  apply("4t ESO", "Física i Química", fqCE, fqCa4, fqSabers4, "Currículum ESO Catalunya, Física i Química 4t ESO. CE i CA revisats DocentCat v10.");
+  apply("4t ESO", "Matemàtiques A", matCE, matCa, matSabers4, "Currículum ESO Catalunya, Matemàtiques A/B 4t ESO. CE i CA revisats DocentCat v11.");
+  apply("4t ESO", "Matemàtiques B", matCE, matCa, matSabers4, "Currículum ESO Catalunya, Matemàtiques A/B 4t ESO. CE i CA revisats DocentCat v11.");
+  apply("4t ESO", "Biologia i Geologia", bgCE, bgCa4, bgSabers4, "Currículum ESO Catalunya, Biologia i Geologia 4t ESO. CE i CA revisats DocentCat v11.");
+  apply("4t ESO", "Física i Química", fqCE, fqCa4, fqSabers4, "Currículum ESO Catalunya, Física i Química 4t ESO. CE i CA revisats DocentCat v11.");
 })();

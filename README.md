@@ -1,36 +1,29 @@
-# DocentCat PWA v10.2 · capçalera i memòria cau corregides
+# DocentCat PWA v11 · Banc d’exercicis STEM
 
-Versió per a GitHub Pages.
+Versió per GitHub Pages amb panell compacte, currículum STEM i un banc local d’exercicis per matèria, curs i tema curricular.
 
-## Novetats v10.2
+## Novetats v11
 
-- Correcció de **Tecnologia de 4t d'ESO**: 6 competències específiques i tots els criteris d'avaluació vinculats.
-- Correcció de **Tecnologia i Digitalització de 1r, 2n i 3r d'ESO**: 7 competències específiques i tots els criteris d'avaluació vinculats.
-- Nou comportament: quan selecciones una o més **CE**, el desplegable de **CA** s'actualitza i mostra només els criteris associats.
-- Es manté el panell compacte amb botons quadrats i totes les exportacions: HTML, Word, TXT, impressió/PDF, JSON de projecte i importació de currículum.
+- Nou fitxer `exercise-bank.js` amb 89 temes STEM i 356 exercicis tipus originals.
+- Matèries cobertes: Matemàtiques, Matemàtiques A, Matemàtiques B, Tecnologia i Digitalització, Tecnologia, Digitalització, Biologia i Geologia, Física i Química.
+- La generació de fitxes prioritza el banc d’exercicis quan el curs, la matèria, els sabers o la consigna coincideixen amb un tema.
+- Si la consigna demana blocs concrets, es mantenen els generadors específics existents.
+- Exportacions i importacions mantingudes: HTML, Word `.doc`, TXT, impressió/PDF, projecte JSON i currículum JSON.
 
-## Publicació a GitHub Pages
+## Fitxers importants
 
-1. Puja tots els fitxers del ZIP al repositori.
-2. Ves a **Settings > Pages**.
-3. Selecciona **Deploy from a branch**, branca `main`, carpeta `/root`.
-4. Obre la web afegint `?v=10.1.1` al final de la URL per evitar memòria cau.
+- `curriculum-data.js`: CE, CA i sabers.
+- `exercise-bank.js`: banc d’exercicis STEM.
+- `app.js`: motor de generació i exportació.
 
-Exemple:
+## Nota de qualitat
+
+El banc és una base local extensa, però no és una transcripció oficial d’activitats del Departament. Els exercicis són originals i s’han d’adaptar al grup, al temps disponible i al criteri docent.
+
+## Publicació
+
+Puja tots els fitxers a GitHub Pages i obre la web amb:
 
 ```text
-https://smenend1.github.io/DocentCat/?v=10.1.1
+https://smenend1.github.io/DocentCat/?v=11
 ```
-
-## Nota important
-
-Aquesta versió corregeix i vincula CE/CA de Tecnologia i Tecnologia i Digitalització. La resta de matèries encara poden contenir una base operativa no exhaustiva fins que es revisin una per una amb el currículum oficial.
-
-
-## Correcció v10.2
-
-Quan es trien diverses CE, la generació de SA, fitxes, rúbriques i paquet complet conserva tots els CA seleccionats o, si no se selecciona cap CA manualment, inclou tots els CA vinculats a les CE triades.
-
-
-## Nota v10.2
-La capçalera visible, el títol del navegador, el manifest i el service worker indiquen v10.2. També s'ha eliminat la referència antiga v8 del comentari de CSS.

@@ -1,21 +1,11 @@
 # Roadmap DocentCat
 
-## v6 · Documents i exercicis específics
-- Paquet complet.
-- Exportació Word/HTML/PDF.
-- Lectura millorada de consignes detallades.
+## v11 feta
+- Banc local d’exercicis STEM.
+- Integració del banc en la generació de fitxes i seqüències.
 
-## v7 · Currículum STEM verificat
-- Base curricular específica per Matemàtiques, Matemàtiques A/B, Tecnologia i Digitalització, Tecnologia, Digitalització, Biologia i Geologia, Física i Química.
-- Blocs interns: Física, Química, Biologia, Geologia.
-- Connexió CE → CA → sabers → activitats recomanades.
-
-## v10.2 · Projectes desats
-- Els meus projectes.
-- Duplicar, editar i exportar paquets.
-- Flux SA → sessions → fitxes → rúbrica → feedback.
-
-## v10.2 · Editor de plantilles propi
-- Crear plantilles pròpies.
-- Variables: {curs}, {materia}, {tema}, {criteris}, {sabers}.
-- Importar/exportar plantilles.
+## Properes millores
+- Editor visual del banc d’exercicis dins la PWA.
+- Etiquetes CE/CA per exercici.
+- Generació de solucionaris més complets per exercici.
+- Paquets imprimibles: fitxa alumnat + solucionari docent + rúbrica.
