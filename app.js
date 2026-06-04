@@ -125,96 +125,86 @@ const generators = {
 };
 
 
-// Impressio professional segura: no modifica els estils de pantalla, nomes crea una finestra nova per imprimir.
-function escapeHtml(value){
+// Impressio professional aillada: no toca els estils de pantalla de l'app.
+function dcEscapeHtml(value){
   return String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 }
-function moduleTitle(key){
-  return ({sa:'Situació d\'aprenentatge', sessions:'Planificació de sessions', worksheets:'Fitxa de treball', rubrics:'Rúbrica', feedback:'Feedback', templates:'Plantilla'})[key] || 'Document docent';
+function dcModuleTitle(key){
+  return ({sa:'Situació d\'aprenentatge',sessions:'Planificació de sessions',worksheets:'Fitxa de treball',rubrics:'Rúbrica',feedback:'Feedback',templates:'Plantilla'})[key] || 'Document docent';
 }
-function printCss(){
-  return `
-  :root{--p-primary:#253B80;--p-secondary:#5067D9;--p-light:#EEF2FF;--p-soft:#F7F8FC;--p-border:#D9DEEA;--p-ink:#172033;--p-muted:#667085;}
-  *{box-sizing:border-box}
-  body{margin:0;background:#fff;color:var(--p-ink);font-family:Arial,Helvetica,sans-serif;font-size:11pt;line-height:1.45;}
-  .print-wrap{max-width:1120px;margin:0 auto;padding:18mm;}
-  .cover{background:linear-gradient(135deg,var(--p-primary),#17224d);color:#fff;border-radius:20px;padding:26px 30px;margin-bottom:18px;break-inside:avoid;}
-  .eyebrow{text-transform:uppercase;letter-spacing:.09em;font-weight:700;font-size:9pt;opacity:.86;margin:0 0 6px;}
-  h1{font-size:26pt;line-height:1.12;margin:0 0 10px;font-weight:800;}
-  h2{font-size:16pt;color:var(--p-primary);margin:18px 0 9px;padding-bottom:5px;border-bottom:2px solid var(--p-light);break-after:avoid;}
-  h3{font-size:12.5pt;color:#26335A;margin:14px 0 6px;break-after:avoid;}
-  p{margin:5px 0;}
-  ul{margin:6px 0 10px 20px;padding:0;}
-  li{margin:3px 0;}
-  .meta{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px;}
-  .pill{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.28);border-radius:999px;padding:5px 9px;font-size:9pt;font-weight:700;}
-  .card{background:#fff;border:1px solid var(--p-border);border-radius:16px;padding:15px 18px;margin:12px 0;break-inside:avoid;}
-  .page-break{break-before:page;}
-  table{width:100%;border-collapse:separate;border-spacing:0;margin:10px 0 14px;font-size:9.2pt;border:1px solid var(--p-border);border-radius:10px;overflow:hidden;break-inside:auto;}
-  tr{break-inside:avoid;}
-  th,td{border-right:1px solid var(--p-border);border-bottom:1px solid var(--p-border);padding:7px 8px;vertical-align:top;}
-  th:last-child,td:last-child{border-right:0;} tr:last-child td{border-bottom:0;}
-  th{background:var(--p-primary);color:#fff;text-align:left;font-weight:800;}
-  tr:nth-child(even) td{background:var(--p-soft);}
-  .footer{display:flex;justify-content:space-between;gap:10px;margin-top:20px;color:var(--p-muted);font-size:9pt;border-top:1px solid var(--p-border);padding-top:8px;}
-  @page{margin:12mm;size:auto;}
-  @media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact}.print-wrap{max-width:none;padding:0}.card{box-shadow:none}}
-  @media screen{body{background:#eef1f7}.print-wrap{padding:20px}.card{box-shadow:0 10px 30px rgba(23,32,51,.06)}}`;
+function dcPrintCss(){
+  return `:root{--print-primary:#253B80;--print-secondary:#5067D9;--print-light:#EEF2FF;--print-soft:#F7F8FC;--print-border:#D9DEEA;--print-ink:#172033;--print-muted:#667085}*{box-sizing:border-box}body{margin:0;background:#fff;color:var(--print-ink);font-family:Arial,Helvetica,sans-serif;font-size:11pt;line-height:1.45}.print-wrap{max-width:1120px;margin:0 auto;padding:18mm}.cover{background:linear-gradient(135deg,var(--print-primary),#17224d);color:#fff;border-radius:20px;padding:26px 30px;margin-bottom:18px;break-inside:avoid}.eyebrow{text-transform:uppercase;letter-spacing:.09em;font-weight:700;font-size:9pt;opacity:.86;margin:0 0 6px}h1{font-size:26pt;line-height:1.12;margin:0 0 10px;font-weight:800}h2{font-size:16pt;color:var(--print-primary);margin:18px 0 9px;padding-bottom:5px;border-bottom:2px solid var(--print-light);break-after:avoid}h3{font-size:12.5pt;color:#26335A;margin:14px 0 6px;break-after:avoid}p{margin:5px 0}ul{margin:6px 0 10px 20px;padding:0}li{margin:3px 0}.meta{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}.pill{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.28);border-radius:999px;padding:5px 9px;font-size:9pt;font-weight:700}.card{background:#fff;border:1px solid var(--print-border);border-radius:16px;padding:15px 18px;margin:12px 0;break-inside:avoid}.page-break{break-before:page}table{width:100%;border-collapse:separate;border-spacing:0;margin:10px 0 14px;font-size:9.2pt;border:1px solid var(--print-border);border-radius:10px;overflow:hidden;break-inside:auto}tr{break-inside:avoid}th,td{border-right:1px solid var(--print-border);border-bottom:1px solid var(--print-border);padding:7px 8px;vertical-align:top}th:last-child,td:last-child{border-right:0}tr:last-child td{border-bottom:0}th{background:var(--print-primary);color:#fff;text-align:left;font-weight:800}tr:nth-child(even) td{background:var(--print-soft)}.footer{display:flex;justify-content:space-between;gap:10px;margin-top:20px;color:var(--print-muted);font-size:9pt;border-top:1px solid var(--print-border);padding-top:8px}@page{margin:12mm;size:auto}@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact}.print-wrap{max-width:none;padding:0}.card{box-shadow:none}}@media screen{body{background:#eef1f7}.print-wrap{padding:20px}.card{box-shadow:0 10px 30px rgba(23,32,51,.06)}}`;
 }
-function isTitleLine(line){
+function dcIsTitle(line){
   const t=line.trim();
   if(!t) return false;
   if(/^Sessió\s+\d+\./i.test(t)) return true;
-  return /^(Context|DADES|CURRÍCULUM|SITUACIÓ|PLANIFICACIÓ|FITXA|RÚBRICA|FEEDBACK|PLANTILLA|Títol|Repte inicial|Producte final|Intencionalitat|Objectius d'aprenentatge|Seqüència|Organització|Avaluació|Atenció|Metacognició|Activitats|Criteris|Adaptació|Ampliació|Solucionari|Competències|Sabers)/i.test(t);
+  return /^(DADES|CURRÍCULUM|SITUACIÓ|PLANIFICACIÓ|FITXA|RÚBRICA|FEEDBACK|PLANTILLA|Títol|Repte inicial|Producte final|Intencionalitat|Objectius d'aprenentatge|Seqüència|Organització|Avaluació|Atenció|Metacognició|Activitats|Criteris|Adaptació|Ampliació|Solucionari|Competències|Sabers|Context)/i.test(t);
 }
-function parseMarkdownTable(lines,start){
+function dcParseTable(lines,start){
   let rows=[],i=start;
   while(i<lines.length && /^\s*\|/.test(lines[i])){rows.push(lines[i]);i++;}
   if(rows.length<2) return null;
   const parsed=rows.filter(r=>!/^[\s|:-]+$/.test(r)).map(r=>r.trim().replace(/^\||\|$/g,'').split('|').map(c=>c.trim()));
   if(!parsed.length) return null;
   const head=parsed[0], body=parsed.slice(1);
-  return {next:i,html:`<table><thead><tr>${head.map(c=>`<th>${escapeHtml(c)}</th>`).join('')}</tr></thead><tbody>${body.map(r=>`<tr>${r.map(c=>`<td>${escapeHtml(c)}</td>`).join('')}</tr>`).join('')}</tbody></table>`};
+  return {next:i, html:`<table><thead><tr>${head.map(c=>`<th>${dcEscapeHtml(c)}</th>`).join('')}</tr></thead><tbody>${body.map(r=>`<tr>${r.map(c=>`<td>${dcEscapeHtml(c)}</td>`).join('')}</tr>`).join('')}</tbody></table>`};
 }
-function renderPrintText(text){
+function dcRenderPrintText(text){
   const lines=String(text||'').replace(/\r\n/g,'\n').split('\n');
   let html='', para=[], list=[];
-  const fp=()=>{if(para.length){html+=`<p>${escapeHtml(para.join(' '))}</p>`;para=[];}};
-  const fl=()=>{if(list.length){html+=`<ul>${list.map(x=>`<li>${escapeHtml(x)}</li>`).join('')}</ul>`;list=[];}};
+  const fp=()=>{if(para.length){html+=`<p>${dcEscapeHtml(para.join(' '))}</p>`;para=[];}};
+  const fl=()=>{if(list.length){html+=`<ul>${list.map(x=>`<li>${dcEscapeHtml(x)}</li>`).join('')}</ul>`;list=[];}};
   for(let i=0;i<lines.length;i++){
     const raw=lines[i], line=raw.trim();
     if(!line){fp();fl();continue;}
-    const table=/^\s*\|/.test(raw)?parseMarkdownTable(lines,i):null;
+    const table=/^\s*\|/.test(raw)?dcParseTable(lines,i):null;
     if(table){fp();fl();html+=table.html;i=table.next-1;continue;}
     if(/^[-•]\s+/.test(line)){fp();list.push(line.replace(/^[-•]\s+/,''));continue;}
     if(/^\d+\.\s+/.test(line) && line.length>18){fp();list.push(line.replace(/^\d+\.\s+/,''));continue;}
-    if(isTitleLine(line)){fp();fl();const tag=/^Sessió\s+\d+\./i.test(line)?'h3':'h2';html+=`<${tag}>${escapeHtml(line)}</${tag}>`;continue;}
-    if(/^[A-Za-zÀ-ÿ0-9 ·/’'().-]+:\s+/.test(line) && line.length<190){fp();fl();const idx=line.indexOf(':');html+=`<p><strong>${escapeHtml(line.slice(0,idx+1))}</strong> ${escapeHtml(line.slice(idx+1).trim())}</p>`;continue;}
+    if(dcIsTitle(line)){fp();fl();const tag=/^Sessió\s+\d+\./i.test(line)?'h3':'h2';html+=`<${tag}>${dcEscapeHtml(line)}</${tag}>`;continue;}
+    if(/^[A-Za-zÀ-ÿ0-9 ·/’'().-]+:\s+/.test(line) && line.length<190){fp();fl();const idx=line.indexOf(':');html+=`<p><strong>${dcEscapeHtml(line.slice(0,idx+1))}</strong> ${dcEscapeHtml(line.slice(idx+1).trim())}</p>`;continue;}
     para.push(line);
   }
   fp();fl();
   return html || '<p>Encara no hi ha contingut generat.</p>';
 }
-function buildPrintPage(title, docs){
+function dcBuildPrintPage(title, docs){
   const c=context();
   const today=new Date().toLocaleDateString('ca-ES');
   const meta=[c.etapa,c.curs,c.materia,c.durada].filter(Boolean);
-  const sections=docs.map((d,i)=>`<section class="card ${i?'page-break':''}"><h2>${escapeHtml(d.title)}</h2>${renderPrintText(d.text)}</section>`).join('');
-  return `<!doctype html><html lang="ca"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escapeHtml(title)}</title><style>${printCss()}</style></head><body><main class="print-wrap"><section class="cover"><p class="eyebrow">DocentCat · Document docent</p><h1>${escapeHtml(title)}</h1><p>${escapeHtml(c.tema)}</p><div class="meta">${meta.map(x=>`<span class="pill">${escapeHtml(x)}</span>`).join('')}<span class="pill">${escapeHtml(today)}</span></div></section>${sections}<footer class="footer"><span>Generat amb DocentCat</span><span>${escapeHtml([c.etapa,c.curs,c.materia].filter(Boolean).join(' · '))}</span></footer></main><script>window.addEventListener('load',()=>setTimeout(()=>window.print(),250));<\/script></body></html>`;
+  const sections=docs.map((d,i)=>`<section class="card ${i?'page-break':''}"><h2>${dcEscapeHtml(d.title)}</h2>${dcRenderPrintText(d.text)}</section>`).join('');
+  return `<!doctype html><html lang="ca"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${dcEscapeHtml(title)}</title><style>${dcPrintCss()}</style></head><body><main class="print-wrap"><section class="cover"><p class="eyebrow">DocentCat · Document docent</p><h1>${dcEscapeHtml(title)}</h1><p>${dcEscapeHtml(c.tema)}</p><div class="meta">${meta.map(x=>`<span class="pill">${dcEscapeHtml(x)}</span>`).join('')}<span class="pill">${dcEscapeHtml(today)}</span></div></section>${sections}<footer class="footer"><span>Generat amb DocentCat</span><span>${dcEscapeHtml([c.etapa,c.curs,c.materia].filter(Boolean).join(' · '))}</span></footer></main><script>window.addEventListener('load',()=>setTimeout(()=>window.print(),350));<\/script></body></html>`;
 }
 function printProfessional(key){
-  const text=outputs[key]?.textContent||'';
-  const html=buildPrintPage(`${moduleTitle(key)} · ${context().tema}`,[{title:moduleTitle(key),text}]);
-  const w=window.open('','_blank');
-  if(!w){toast('El navegador ha bloquejat la finestra d\'impressió');return;}
-  w.document.open();w.document.write(html);w.document.close();
+  try{
+    const text=outputs[key]?.textContent||'';
+    const w=window.open('','_blank');
+    if(!w){toast('El navegador ha bloquejat la finestra d\'impressió');return;}
+    w.document.open();
+    w.document.write(dcBuildPrintPage(`${dcModuleTitle(key)} · ${context().tema}`,[{title:dcModuleTitle(key),text}]));
+    w.document.close();
+  }catch(err){ console.error(err); window.print(); }
 }
 function printProject(){
-  const docs=Object.keys(outputs).filter(k=>outputs[k]?.textContent && !/Encara no hi ha contingut generat/i.test(outputs[k].textContent)).map(k=>({title:moduleTitle(k),text:outputs[k].textContent}));
-  if(!docs.length){toast('No hi ha documents generats per imprimir');return;}
-  const w=window.open('','_blank');
-  if(!w){toast('El navegador ha bloquejat la finestra d\'impressió');return;}
-  w.document.open();w.document.write(buildPrintPage(`Projecte docent complet · ${context().tema}`,docs));w.document.close();
+  try{
+    const docs=Object.keys(outputs).filter(k=>outputs[k]?.textContent && !/Encara no hi ha contingut generat/i.test(outputs[k].textContent)).map(k=>({title:dcModuleTitle(k),text:outputs[k].textContent}));
+    if(!docs.length){toast('No hi ha documents generats per imprimir');return;}
+    const w=window.open('','_blank');
+    if(!w){toast('El navegador ha bloquejat la finestra d\'impressió');return;}
+    w.document.open();w.document.write(dcBuildPrintPage(`Projecte docent complet · ${context().tema}`,docs));w.document.close();
+  }catch(err){ console.error(err); window.print(); }
+}
+function addPrintProjectButton(){
+  const actions=document.querySelector('.header-actions');
+  if(!actions || document.getElementById('printProjectBtn')) return;
+  const btn=document.createElement('button');
+  btn.id='printProjectBtn';
+  btn.className='ghost';
+  btn.textContent='Imprimeix projecte';
+  btn.onclick=printProject;
+  const exportBtn=document.getElementById('exportAllBtn');
+  actions.insertBefore(btn, exportBtn || actions.firstChild);
 }
 
 function save(){
@@ -271,12 +261,14 @@ $('selectCoreBtn').onclick=selectCore;
 $('copyCurriculumBtn').onclick=copyCurriculum;
 $('importCurriculumBtn').onclick=importCustomCurriculum;
 $('clearBtn').onclick=()=>{ if(confirm('Vols esborrar les dades locals de DocentCat?')){ localStorage.removeItem(storeKey); location.reload(); }};
-if($('printProjectBtn')) $('printProjectBtn').onclick=printProject;
 $('exportAllBtn').onclick=()=>{ const all=Object.keys(outputs).map(k=>`# ${k.toUpperCase()}\n\n${outputs[k].textContent}`).join('\n\n---\n\n'); downloadText(`docentcat-export-${dateSlug()}.txt`, all); };
+addPrintProjectButton();
 fields.forEach(f=>$(f)?.addEventListener('change',()=>{ if(['stage','level','subject'].includes(f)){ populateContextSelectors(); } if(f === 'templateType') renderTemplatePreview(); save(); }));
 multiFields.forEach(f=>$(f)?.addEventListener('change', save));
 
 let deferredPrompt; window.addEventListener('beforeinstallprompt', e=>{ e.preventDefault(); deferredPrompt=e; $('installBtn').hidden=false; });
 $('installBtn').onclick=async()=>{ if(deferredPrompt){ deferredPrompt.prompt(); await deferredPrompt.userChoice; deferredPrompt=null; $('installBtn').hidden=true; }};
-if('serviceWorker' in navigator){ navigator.serviceWorker.register('./service-worker.js'); }
+// Service worker desactivat temporalment per evitar caches antics o pantalla en blanc.
+if('serviceWorker' in navigator){ navigator.serviceWorker.getRegistrations?.().then(regs=>regs.forEach(r=>r.unregister())).catch(()=>{}); }
+if(window.caches){ caches.keys().then(keys=>keys.forEach(k=>caches.delete(k))).catch(()=>{}); }
 load();
