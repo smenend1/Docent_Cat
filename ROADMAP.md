@@ -10,12 +10,12 @@
 - Blocs interns: Física, Química, Biologia, Geologia.
 - Connexió CE → CA → sabers → activitats recomanades.
 
-## v8 · Projectes desats
+## v10.2 · Projectes desats
 - Els meus projectes.
 - Duplicar, editar i exportar paquets.
 - Flux SA → sessions → fitxes → rúbrica → feedback.
 
-## v9 · Editor de plantilles propi
+## v10.2 · Editor de plantilles propi
 - Crear plantilles pròpies.
 - Variables: {curs}, {materia}, {tema}, {criteris}, {sabers}.
 - Importar/exportar plantilles.

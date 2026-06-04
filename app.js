@@ -1,5 +1,5 @@
 const $ = (id) => document.getElementById(id);
-const storeKey = 'docentcat-pwa-v9-curriculum-linked';
+const storeKey = 'docentcat-pwa-v10-2-ca-multiple-fix';
 const fields = ['stage','subject','level','templateType','topic','taskDescription','duration','groupProfile','language','saProduct','saContext','saMethod','saAssessment','sessionCount','sessionMinutes','sessionFocus','worksheetType','worksheetLevel','activityCount','rubricTask','rubricScale','rubricCriteria','studentWork','improvementGoal','feedbackTone','feedbackDetail','customCurriculum'];
 const multiFields = ['ceSelect','caSelect','sabersSelect'];
 const outputs = {};
@@ -43,12 +43,18 @@ function criteriaForSelectedCompetencies(data){
   }
   return allCriteria(data);
 }
+function uniqueList(items){ return Array.from(new Set((items || []).filter(Boolean))); }
 function pickedCurriculum(){
   const data = currentData();
+  const selectedCe = selectedValues('ceSelect');
+  const selectedCa = selectedValues('caSelect');
   const availableCa = criteriaForSelectedCompetencies(data);
   return {
-    ce: selectedValues('ceSelect').length ? selectedValues('ceSelect') : (data.ce || []).slice(0,2),
-    ca: selectedValues('caSelect').length ? selectedValues('caSelect') : availableCa.slice(0,3),
+    ce: selectedCe.length ? selectedCe : (data.ce || []).slice(0,2),
+    // v10.2: si hi ha diverses CE seleccionades i l'usuari no marca manualment els CA,
+    // no retallem als primers 3 criteris, perquè això feia aparèixer només CA1.x.
+    // En aquest cas s'inclouen tots els CA vinculats a les CE triades.
+    ca: selectedCa.length ? uniqueList(selectedCa) : (selectedCe.length ? uniqueList(availableCa) : uniqueList(availableCa).slice(0,3)),
     sabers: selectedValues('sabersSelect').length ? selectedValues('sabersSelect') : (data.sabers || []).slice(0,4)
   };
 }
@@ -111,7 +117,9 @@ function updateCurriculumHint(){
   const hint = $('curriculumLinkHint');
   if(!hint) return;
   const selected = selectedValues('ceSelect').map(ceCodeFromText).filter(Boolean);
-  if(data.caByCe && selected.length){ hint.textContent = `Criteris filtrats segons ${selected.join(', ')}.`; }
+  const caCount = $('caSelect') ? $('caSelect').options.length : 0;
+  const caSelectedCount = selectedValues('caSelect').length;
+  if(data.caByCe && selected.length){ hint.textContent = `Criteris filtrats segons ${selected.join(', ')}: ${caCount} CA disponibles. Seleccionats manualment: ${caSelectedCount}. Si no en marques cap, la SA inclourà tots els CA vinculats a les CE triades.`; }
   else if(data.caByCe){ hint.textContent = `Selecciona una o més CE per veure només els CA vinculats. Sense CE seleccionada es mostren tots.`; }
   else { hint.textContent = `Aquesta matèria encara no té vinculació CE → CA carregada.`; }
 }
