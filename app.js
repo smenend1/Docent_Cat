@@ -132,8 +132,31 @@ function dcEscapeHtml(value){
 function dcModuleTitle(key){
   return ({sa:'Situació d\'aprenentatge',sessions:'Planificació de sessions',worksheets:'Fitxa de treball',rubrics:'Rúbrica',feedback:'Feedback',templates:'Plantilla'})[key] || 'Document docent';
 }
+
+function dcGetPrintTheme(){
+  const key = localStorage.getItem('docentcat-print-theme') || 'blue';
+  const themes = {
+    blue: {primary:'#253B80', secondary:'#5067D9', light:'#EEF2FF', soft:'#F7F8FC', border:'#D9DEEA', dark:'#17224D'},
+    green: {primary:'#166534', secondary:'#22A06B', light:'#ECFDF3', soft:'#F7FCF9', border:'#CDEDD9', dark:'#0F3D25'},
+    burgundy: {primary:'#7A1E3A', secondary:'#B23A5B', light:'#FFF1F4', soft:'#FFF8FA', border:'#F2C9D4', dark:'#3F0F20'},
+    slate: {primary:'#334155', secondary:'#64748B', light:'#F1F5F9', soft:'#F8FAFC', border:'#CBD5E1', dark:'#0F172A'},
+    black: {primary:'#111827', secondary:'#374151', light:'#F3F4F6', soft:'#FFFFFF', border:'#D1D5DB', dark:'#000000'}
+  };
+  return themes[key] || themes.blue;
+}
+function setupPrintThemeSelector(){
+  const sel = $('printTheme');
+  if(!sel) return;
+  sel.value = localStorage.getItem('docentcat-print-theme') || 'blue';
+  sel.addEventListener('change', () => {
+    localStorage.setItem('docentcat-print-theme', sel.value);
+    toast('Color d’impressió actualitzat');
+  });
+}
+
 function dcPrintCss(){
-  return `:root{--print-primary:#253B80;--print-secondary:#5067D9;--print-light:#EEF2FF;--print-soft:#F7F8FC;--print-border:#D9DEEA;--print-ink:#172033;--print-muted:#667085}*{box-sizing:border-box}body{margin:0;background:#fff;color:var(--print-ink);font-family:Arial,Helvetica,sans-serif;font-size:11pt;line-height:1.45}.print-wrap{max-width:1120px;margin:0 auto;padding:18mm}.cover{background:linear-gradient(135deg,var(--print-primary),#17224d);color:#fff;border-radius:20px;padding:26px 30px;margin-bottom:18px;break-inside:avoid}.eyebrow{text-transform:uppercase;letter-spacing:.09em;font-weight:700;font-size:9pt;opacity:.86;margin:0 0 6px}h1{font-size:26pt;line-height:1.12;margin:0 0 10px;font-weight:800}h2{font-size:16pt;color:var(--print-primary);margin:18px 0 9px;padding-bottom:5px;border-bottom:2px solid var(--print-light);break-after:avoid}h3{font-size:12.5pt;color:#26335A;margin:14px 0 6px;break-after:avoid}p{margin:5px 0}ul{margin:6px 0 10px 20px;padding:0}li{margin:3px 0}.meta{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}.pill{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.28);border-radius:999px;padding:5px 9px;font-size:9pt;font-weight:700}.card{background:#fff;border:1px solid var(--print-border);border-radius:16px;padding:15px 18px;margin:12px 0;break-inside:avoid}.page-break{break-before:page}table{width:100%;border-collapse:separate;border-spacing:0;margin:10px 0 14px;font-size:9.2pt;border:1px solid var(--print-border);border-radius:10px;overflow:hidden;break-inside:auto}tr{break-inside:avoid}th,td{border-right:1px solid var(--print-border);border-bottom:1px solid var(--print-border);padding:7px 8px;vertical-align:top}th:last-child,td:last-child{border-right:0}tr:last-child td{border-bottom:0}th{background:var(--print-primary);color:#fff;text-align:left;font-weight:800}tr:nth-child(even) td{background:var(--print-soft)}.footer{display:flex;justify-content:space-between;gap:10px;margin-top:20px;color:var(--print-muted);font-size:9pt;border-top:1px solid var(--print-border);padding-top:8px}@page{margin:12mm;size:auto}@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact}.print-wrap{max-width:none;padding:0}.card{box-shadow:none}}@media screen{body{background:#eef1f7}.print-wrap{padding:20px}.card{box-shadow:0 10px 30px rgba(23,32,51,.06)}}`;
+  const t = dcGetPrintTheme();
+  return `:root{--print-primary:${t.primary};--print-secondary:${t.secondary};--print-light:${t.light};--print-soft:${t.soft};--print-border:${t.border};--print-ink:#172033;--print-muted:#667085;--print-dark:${t.dark}}*{box-sizing:border-box}body{margin:0;background:#fff;color:var(--print-ink);font-family:Arial,Helvetica,sans-serif;font-size:11pt;line-height:1.45}.print-wrap{max-width:1120px;margin:0 auto;padding:18mm}.cover{background:linear-gradient(135deg,var(--print-primary),var(--print-dark));color:#fff;border-radius:20px;padding:26px 30px;margin-bottom:18px;break-inside:avoid}.eyebrow{text-transform:uppercase;letter-spacing:.09em;font-weight:700;font-size:9pt;opacity:.86;margin:0 0 6px}h1{font-size:26pt;line-height:1.12;margin:0 0 10px;font-weight:800}h2{font-size:16pt;color:var(--print-primary);margin:18px 0 9px;padding-bottom:5px;border-bottom:2px solid var(--print-light);break-after:avoid}h3{font-size:12.5pt;color:var(--print-primary);margin:14px 0 6px;break-after:avoid}p{margin:5px 0}ul{margin:6px 0 10px 20px;padding:0}li{margin:3px 0}.meta{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}.pill{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.28);border-radius:999px;padding:5px 9px;font-size:9pt;font-weight:700}.card{background:#fff;border:1px solid var(--print-border);border-radius:16px;padding:15px 18px;margin:12px 0;break-inside:avoid}.page-break{break-before:page}table{width:100%;border-collapse:separate;border-spacing:0;margin:10px 0 14px;font-size:9.2pt;border:1px solid var(--print-border);border-radius:10px;overflow:hidden;break-inside:auto}tr{break-inside:avoid}th,td{border-right:1px solid var(--print-border);border-bottom:1px solid var(--print-border);padding:7px 8px;vertical-align:top}th:last-child,td:last-child{border-right:0}tr:last-child td{border-bottom:0}th{background:var(--print-primary);color:#fff;text-align:left;font-weight:800}tr:nth-child(even) td{background:var(--print-soft)}.footer{display:flex;justify-content:space-between;gap:10px;margin-top:20px;color:var(--print-muted);font-size:9pt;border-top:1px solid var(--print-border);padding-top:8px}@page{margin:12mm;size:auto}@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact}.print-wrap{max-width:none;padding:0}.card{box-shadow:none}}@media screen{body{background:#eef1f7}.print-wrap{padding:20px}.card{box-shadow:0 10px 30px rgba(23,32,51,.06)}}`;
 }
 function dcIsTitle(line){
   const t=line.trim();
@@ -263,6 +286,7 @@ $('importCurriculumBtn').onclick=importCustomCurriculum;
 $('clearBtn').onclick=()=>{ if(confirm('Vols esborrar les dades locals de DocentCat?')){ localStorage.removeItem(storeKey); location.reload(); }};
 $('exportAllBtn').onclick=()=>{ const all=Object.keys(outputs).map(k=>`# ${k.toUpperCase()}\n\n${outputs[k].textContent}`).join('\n\n---\n\n'); downloadText(`docentcat-export-${dateSlug()}.txt`, all); };
 addPrintProjectButton();
+setupPrintThemeSelector();
 fields.forEach(f=>$(f)?.addEventListener('change',()=>{ if(['stage','level','subject'].includes(f)){ populateContextSelectors(); } if(f === 'templateType') renderTemplatePreview(); save(); }));
 multiFields.forEach(f=>$(f)?.addEventListener('change', save));
 
