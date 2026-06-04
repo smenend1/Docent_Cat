@@ -9,19 +9,3 @@ details summary{cursor:pointer; font-weight:700; color:#253b80;}
 .template-card strong{display:block; color:#253b80; margin-bottom:.4rem;}
 .template-card span{display:block; color:#64748b; font-size:.86rem; line-height:1.35;}
 .template-card.selected{outline:3px solid rgba(37,59,128,.22); border-color:#253b80;}
-
-
-/* Impressió professional DocentCat
-   Colors modificables:
-   --print-primary, --print-secondary, --print-light, --print-very-light, --print-border.
-   Per exemple, canvia --print-primary per un verd (#0F766E) o granat (#7F1D1D). */
-:root{
-  --print-primary:#253B80;
-  --print-secondary:#5067D9;
-  --print-light:#EEF2FF;
-  --print-very-light:#F7F8FC;
-  --print-border:#D9DEEA;
-}
-@media print{
-  body{-webkit-print-color-adjust:exact;print-color-adjust:exact}
-}

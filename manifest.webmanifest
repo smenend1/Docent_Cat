@@ -1,7 +1,7 @@
 {
-  "name": "DocentCat v12.3 - Exportacions clares",
+  "name": "DocentCat - Assistent docent",
   "short_name": "DocentCat",
-  "description": "PWA per crear SA, sessions, fitxes, rúbriques i feedback amb panell compacte de botons quadrats i finestres de configuració.",
+  "description": "PWA per crear SA, sessions, fitxes, rúbriques i feedback per a secundària a Catalunya.",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#f4f6fb",
