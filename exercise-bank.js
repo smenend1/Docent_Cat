@@ -1,7 +1,7 @@
-/* DocentCat v12 - Banc local d'exercicis STEM. Exercicis originals; revisar i adaptar abans d'usar-los en aula. */
+/* DocentCat v12.2 - Banc local d'exercicis STEM. Exercicis originals; revisar i adaptar abans d'usar-los en aula. */
 window.DOCENTCAT_EXERCISE_BANK = {
   "meta": {
-    "version": "v12",
+    "version": "v12.2",
     "description": "Banc local d'exercicis STEM de DocentCat: exercicis originals alineats amb els blocs de sabers del currículum de Catalunya. No substitueix la font oficial.",
     "sources": [
       "DOGC Decret 175/2022 annex 3",

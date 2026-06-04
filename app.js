@@ -1,5 +1,5 @@
 const $ = (id) => document.getElementById(id);
-const storeKey = 'docentcat-pwa-v12.1-exercise-selector';
+const storeKey = 'docentcat-pwa-v12.2-export-clear';
 const fields = ['stage','subject','level','templateType','topic','taskDescription','duration','groupProfile','language','saProduct','saContext','saMethod','saAssessment','sessionCount','sessionMinutes','sessionFocus','worksheetType','worksheetLevel','activityCount','rubricTask','rubricScale','rubricCriteria','studentWork','improvementGoal','feedbackTone','feedbackDetail','customCurriculum'];
 const multiFields = ['ceSelect','caSelect','sabersSelect'];
 const outputs = {};
@@ -51,7 +51,7 @@ function pickedCurriculum(){
   const availableCa = criteriaForSelectedCompetencies(data);
   return {
     ce: selectedCe.length ? selectedCe : (data.ce || []).slice(0,2),
-    // v12.1: si hi ha diverses CE seleccionades i l'usuari no marca manualment els CA,
+    // v12.2: si hi ha diverses CE seleccionades i l'usuari no marca manualment els CA,
     // no retallem als primers 3 criteris, perquè això feia aparèixer només CA1.x.
     // En aquest cas s'inclouen tots els CA vinculats a les CE triades.
     ca: selectedCa.length ? uniqueList(selectedCa) : (selectedCe.length ? uniqueList(availableCa) : uniqueList(availableCa).slice(0,3)),
@@ -399,7 +399,7 @@ function renderExerciseBank(){
   list.innerHTML = '<div class="exercise-empty">Cercant exercicis del banc...</div>';
   if(hint) hint.textContent = `Cercant exercicis per a ${c.curs || 'curs no indicat'} · ${c.materia || 'matèria no indicada'} · ${c.tema || 'tema no indicat'}...`;
   let rows = bankExerciseObjects(c);
-  // v12.1: si no hi ha coincidència exacta per curs/matèria, fem una cerca més permissiva per matèria en tots els cursos.
+  // v12.2: si no hi ha coincidència exacta per curs/matèria, fem una cerca més permissiva per matèria en tots els cursos.
   if(!rows.length) rows = fallbackExerciseObjects(c);
   const max = Math.max(12, Math.min(80, (Number(get('activityCount')) || 8) * 5));
   const visible = rows.slice(0, max);
@@ -620,6 +620,24 @@ function generate(key){ const text = clean(generators[key]()); outputs[key].text
 function copyText(text){ navigator.clipboard?.writeText(text).then(()=>toast('Copiat')); }
 function downloadText(filename,text){ const blob=new Blob([text],{type:'text/plain;charset=utf-8'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=filename; a.click(); URL.revokeObjectURL(a.href); }
 function dateSlug(){ return new Date().toISOString().slice(0,10); }
+
+function outputTextFor(key){
+  if(key === 'all') return Object.keys(outputs).map(k=>`# ${k.toUpperCase()}\n\n${outputs[k].textContent || 'Encara no hi ha contingut generat.'}`).join('\n\n---\n\n');
+  return outputs[key]?.textContent || '';
+}
+function exportGeneratedDocument(key, format){
+  const text = outputTextFor(key);
+  const title = key === 'all' ? 'Exportació DocentCat' : key.toUpperCase();
+  if(!text || text.includes('Encara no hi ha contingut generat.')){
+    toast('Encara no hi ha contingut generat per exportar');
+    return;
+  }
+  const name = key === 'all' ? `docentcat-export-${dateSlug()}` : `${key}-${dateSlug()}`;
+  if(format === 'html') return downloadHtml(`${name}.html`, text, title);
+  if(format === 'doc') return downloadDoc(`${name}.doc`, text, title);
+  if(format === 'txt') return downloadText(`${name}.txt`, text);
+  if(format === 'print') return printDocument(text, title);
+}
 function toast(msg){ const el=document.createElement('div'); el.className='toast'; el.textContent=msg; document.body.appendChild(el); setTimeout(()=>el.remove(),2200); }
 function mergeDeep(target, source){ for(const [key,value] of Object.entries(source || {})){ if(value && typeof value === 'object' && !Array.isArray(value)) target[key] = mergeDeep(target[key] || {}, value); else target[key] = value; } return target; }
 function importCustomCurriculum(){ try{ const txt = get('customCurriculum'); if(!txt) return toast('No hi ha JSON per importar'); const custom = JSON.parse(txt); curriculum = mergeDeep(curriculum, custom); populateContextSelectors(); save(); toast('Currículum propi importat'); }catch(err){ toast('JSON no vàlid'); } }
@@ -629,7 +647,7 @@ for(const btn of document.querySelectorAll('[data-generate]')) btn.onclick=()=>g
 $('saveContextBtn').onclick=save; $('selectCoreBtn').onclick=selectCore; $('copyCurriculumBtn').onclick=copyCurriculum; $('importCurriculumBtn').onclick=importCustomCurriculum;
 $('clearBtn').onclick=()=>{ if(confirm('Vols esborrar les dades locals de DocentCat?')){ localStorage.removeItem(storeKey); location.reload();
 updateSummary(); }};
-$('exportAllBtn').onclick=()=>{ const all=Object.keys(outputs).map(k=>`# ${k.toUpperCase()}\n\n${outputs[k].textContent}`).join('\n\n---\n\n'); downloadHtml(`docentcat-export-${dateSlug()}.html`, all, 'Exportació DocentCat'); };
+$('exportAllBtn').onclick=()=>exportGeneratedDocument('all','html');
 $('fullPackBtn').onclick=()=>{ ['sa','sessions','worksheets','rubrics','feedback','templates'].forEach(k=>{ if(outputs[k]) outputs[k].textContent = clean(generators[k]()); }); save(); const all=Object.keys(outputs).map(k=>`# ${k.toUpperCase()}\n\n${outputs[k].textContent}`).join('\n\n---\n\n'); downloadHtml(`docentcat-paquet-complet-${dateSlug()}.html`, all, 'Paquet complet DocentCat'); };
 fields.forEach(f=>$(f)?.addEventListener('change',()=>{ if(['stage','level','subject'].includes(f)){ populateContextSelectors(); } if(f === 'templateType') renderTemplatePreview(); if(['stage','level','subject','topic','taskDescription','activityCount'].includes(f)) renderExerciseBank(); save(); }));
 multiFields.forEach(f=>$(f)?.addEventListener('change',()=>{ if(f === 'ceSelect') updateCriteriaFromCompetencies(false); if(['ceSelect','caSelect','sabersSelect'].includes(f)) renderExerciseBank(); save(); }));
@@ -652,6 +670,10 @@ $('exportAllBtnMirror')?.addEventListener('click',()=>$('exportAllBtn')?.click()
 $('fullPackBtnMirror')?.addEventListener('click',()=>$('fullPackBtn')?.click());
 $('exportStateBtn')?.addEventListener('click',exportStateJson);
 $('importStateFile')?.addEventListener('change',e=>importStateJson(e.target.files?.[0]));
+$('exportChosenBtn')?.addEventListener('click',()=>exportGeneratedDocument(get('exportDocumentSelect') || 'sa', get('exportFormatSelect') || 'html'));
+$('exportSaHtmlBtn')?.addEventListener('click',()=>exportGeneratedDocument('sa','html'));
+$('exportSaDocBtn')?.addEventListener('click',()=>exportGeneratedDocument('sa','doc'));
+$('printSaBtn')?.addEventListener('click',()=>exportGeneratedDocument('sa','print'));
 function bindAction(id, fn){
   const el = $(id);
   if(!el) return;

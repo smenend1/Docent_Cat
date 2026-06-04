@@ -1,14 +1,17 @@
-# DocentCat PWA v12.1 · Selector d’exercicis STEM
+# DocentCat PWA v12.2 · Exportacions clares
 
 Versió per GitHub Pages amb panell compacte, currículum STEM i un banc local d’exercicis per matèria, curs i tema curricular.
 
-## Novetats v12.1
+## Novetats v12.2
 
 - Nou fitxer `exercise-bank.js` amb 89 temes STEM i 356 exercicis tipus originals.
 - Matèries cobertes: Matemàtiques, Matemàtiques A, Matemàtiques B, Tecnologia i Digitalització, Tecnologia, Digitalització, Biologia i Geologia, Física i Química.
 - La generació de fitxes prioritza el banc d’exercicis quan el curs, la matèria, els sabers o la consigna coincideixen amb un tema.
 - Si la consigna demana blocs concrets, es mantenen els generadors específics existents.
-- Exportacions i importacions mantingudes: HTML, Word `.doc`, TXT, impressió/PDF, projecte JSON i currículum JSON.
+- Panell Exportar / importar més clar: exportació de SA, sessions, fitxes, rúbriques, feedback, plantilles o tot el projecte.
+- Exportació directa de la SA en HTML, Word i impressió/PDF.
+- Exportació/importació de projecte JSON visible i explicada.
+- Selector d’exercicis STEM mantingut.
 
 ## Fitxers importants
 
@@ -25,5 +28,5 @@ El banc és una base local extensa, però no és una transcripció oficial d’a
 Puja tots els fitxers a GitHub Pages i obre la web amb:
 
 ```text
-https://smenend1.github.io/DocentCat/?v=11
+https://smenend1.github.io/DocentCat/?v=12.2
 ```

@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="theme-color" content="#253b80" />
-  <title>DocentCat v12.1 · Selector d’exercicis STEM</title>
+  <title>DocentCat v12.2 · Exportacions clares</title>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="stylesheet" href="styles.css" />
 </head>
@@ -12,8 +12,8 @@
   <header class="app-header compact-header">
     <div>
       <p class="eyebrow">PWA per a docents de secundària · Catalunya</p>
-      <h1>DocentCat <span class="version-badge">v12</span></h1>
-      <p class="subtitle">Panell compacte amb botons quadrats. Versió v12 amb selector visible d’exercicis STEM del banc local per triar-los abans de generar la fitxa.</p>
+      <h1>DocentCat <span class="version-badge">v12.2</span></h1>
+      <p class="subtitle">Panell compacte amb botons quadrats. Versió v12.2 amb selector d’exercicis STEM i exportació/importació més visible per document i per projecte.</p>
     </div>
     <div class="header-actions">
       <button id="installBtn" class="ghost" hidden>Instal·la</button>
@@ -43,7 +43,7 @@
       <button class="square-btn" data-open-modal="modal-rubrics"><span>Rúbriques</span><small>Criteris i nivells</small></button>
       <button class="square-btn" data-open-modal="modal-feedback"><span>Feedback</span><small>Retorn personalitzat</small></button>
       <button class="square-btn" data-open-modal="modal-templates"><span>Plantilles</span><small>Documents reutilitzables</small></button>
-      <button class="square-btn utility-square" data-open-modal="modal-export"><span>Exportar / importar</span><small>HTML, PDF, Word, TXT i JSON</small></button>
+      <button class="square-btn utility-square" data-open-modal="modal-export"><span>Exportar / importar</span><small>SA, fitxes, paquet complet, HTML, Word, PDF i JSON</small></button>
     </section>
 
     <section class="panel quick-summary">
@@ -54,7 +54,7 @@
         <div><strong>Matèria</strong><span id="summarySubject">—</span></div>
         <div><strong>Tema</strong><span id="summaryTopic">—</span></div>
       </div>
-      <p class="hint">Versió carregada: v12. Els resultats són editables dins de cada finestra abans de copiar, baixar o imprimir.</p>
+      <p class="hint">Versió carregada: v12.2. Els resultats són editables dins de cada finestra abans de copiar, baixar, exportar o imprimir.</p>
     </section>
   </main>
 
@@ -195,15 +195,28 @@
   </div>
 
   <div id="modal-export" class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-export-title" hidden>
-    <div class="modal-card panel">
-      <div class="modal-head"><div><h2 id="modal-export-title">Exportar / importar</h2><p>Les opcions de sortida es mantenen: HTML, impressió/PDF, Word, TXT i JSON curricular.</p></div><button class="icon-close" data-close-modal>×</button></div>
+    <div class="modal-card panel wide">
+      <div class="modal-head"><div><h2 id="modal-export-title">Exportar / importar</h2><p>Exporta documents concrets, tot el projecte o recupera un projecte JSON guardat.</p></div><button class="icon-close" data-close-modal>×</button></div>
+      <div class="module-guide"><strong>On és cada exportació?</strong><span>Si vols exportar només la SA, tria “SA” a sota. Si vols desar tota la feina per continuar-la més tard, usa “Exporta projecte JSON”.</span></div>
+      <h3>Documents generats</h3>
+      <div class="grid two">
+        <label>Document a exportar<select id="exportDocumentSelect"><option value="sa">SA</option><option value="sessions">Sessions</option><option value="worksheets">Fitxes</option><option value="rubrics">Rúbriques</option><option value="feedback">Feedback</option><option value="templates">Plantilles</option><option value="all">Tot en un document</option></select></label>
+        <label>Format<select id="exportFormatSelect"><option value="html">HTML</option><option value="doc">Word .doc</option><option value="txt">Text .txt</option><option value="print">Imprimeix/PDF</option></select></label>
+      </div>
       <div class="export-grid">
+        <button id="exportChosenBtn" class="square-action primary-export">Exporta document triat</button>
+        <button id="exportSaHtmlBtn" class="square-action">Baixa SA en HTML</button>
+        <button id="exportSaDocBtn" class="square-action">Baixa SA en Word</button>
+        <button id="printSaBtn" class="square-action">Imprimeix/PDF SA</button>
         <button id="exportAllBtnMirror" class="square-action">Exporta tot en HTML</button>
-        <button id="fullPackBtnMirror" class="square-action">Paquet complet</button>
+        <button id="fullPackBtnMirror" class="square-action">Genera paquet complet</button>
+      </div>
+      <h3>Projecte</h3>
+      <p class="hint">El JSON de projecte desa camps, CE, CA, sabers i sortides generades. Serveix per reprendre la feina després o passar-la a un altre dispositiu.</p>
+      <div class="export-grid">
         <button id="exportStateBtn" class="square-action">Exporta projecte JSON</button>
         <label class="square-action file-action">Importa projecte JSON<input id="importStateFile" type="file" accept="application/json,.json" hidden></label>
       </div>
-      <p class="hint">Per imprimir en PDF, entra a qualsevol document generat i prem “Imprimeix/PDF”.</p>
       <div class="modal-actions"><button class="primary" data-close-modal>Accepta i torna</button></div>
     </div>
   </div>
