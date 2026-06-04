@@ -1,5 +1,5 @@
 const $ = (id) => document.getElementById(id);
-const storeKey = 'docentcat-pwa-v12.2-export-clear';
+const storeKey = 'docentcat-pwa-v12.3-import-fix';
 const fields = ['stage','subject','level','templateType','topic','taskDescription','duration','groupProfile','language','saProduct','saContext','saMethod','saAssessment','sessionCount','sessionMinutes','sessionFocus','worksheetType','worksheetLevel','activityCount','rubricTask','rubricScale','rubricCriteria','studentWork','improvementGoal','feedbackTone','feedbackDetail','customCurriculum'];
 const multiFields = ['ceSelect','caSelect','sabersSelect'];
 const outputs = {};
@@ -51,7 +51,7 @@ function pickedCurriculum(){
   const availableCa = criteriaForSelectedCompetencies(data);
   return {
     ce: selectedCe.length ? selectedCe : (data.ce || []).slice(0,2),
-    // v12.2: si hi ha diverses CE seleccionades i l'usuari no marca manualment els CA,
+    // v12.3: si hi ha diverses CE seleccionades i l'usuari no marca manualment els CA,
     // no retallem als primers 3 criteris, perquè això feia aparèixer només CA1.x.
     // En aquest cas s'inclouen tots els CA vinculats a les CE triades.
     ca: selectedCa.length ? uniqueList(selectedCa) : (selectedCe.length ? uniqueList(availableCa) : uniqueList(availableCa).slice(0,3)),
@@ -613,9 +613,66 @@ function documentHtml(text,title='DocentCat'){
 function printDocument(text,title){ const w=window.open('', '_blank'); if(!w){toast('El navegador ha bloquejat la finestra d\'impressió'); return;} w.document.open(); w.document.write(documentHtml(text,title)); w.document.close(); w.focus(); setTimeout(()=>w.print(),300); }
 function downloadHtml(filename,text,title){ const blob=new Blob([documentHtml(text,title)],{type:'text/html;charset=utf-8'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=filename; a.click(); URL.revokeObjectURL(a.href); }
 function downloadDoc(filename,text,title){ const blob=new Blob([documentHtml(text,title)],{type:'application/msword;charset=utf-8'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=filename; a.click(); URL.revokeObjectURL(a.href); }
-function collectState(){ const data={fields:{}, multi:{}, outputs:{}, custom: null}; fields.forEach(f=>{if($(f)) data.fields[f]=$(f).value}); multiFields.forEach(f=>{if($(f)) data.multi[f]=selectedValues(f)}); Object.keys(outputs).forEach(k=>data.outputs[k]=outputs[k].textContent); return data; }
+function collectState(){
+  const data={version:'12.3', exportedAt:new Date().toISOString(), fields:{}, multi:{}, outputs:{}};
+  fields.forEach(f=>{if($(f)) data.fields[f]=$(f).value});
+  multiFields.forEach(f=>{if($(f)) data.multi[f]=selectedValues(f)});
+  Object.keys(outputs).forEach(k=>data.outputs[k]=outputs[k].textContent);
+  return data;
+}
+function normalizeImportedState(data){
+  // Accepta tant el JSON de projecte de DocentCat com objectes més antics o parcialment embolcallats.
+  if(!data || typeof data !== 'object') throw new Error('empty');
+  if(data.project && typeof data.project === 'object') data = data.project;
+  if(data.docentcat && typeof data.docentcat === 'object') data = data.docentcat;
+  const out = {fields:{}, multi:{}, outputs:{}};
+  if(data.fields || data.multi || data.outputs){
+    out.fields = data.fields || {};
+    out.multi = data.multi || {};
+    out.outputs = data.outputs || {};
+    return out;
+  }
+  // Suport per JSON pla: {stage, level, subject, ceSelect, caSelect...}
+  fields.forEach(f=>{ if(Object.prototype.hasOwnProperty.call(data,f)) out.fields[f]=data[f]; });
+  multiFields.forEach(f=>{ if(Array.isArray(data[f])) out.multi[f]=data[f]; });
+  ['sa','sessions','worksheets','rubrics','feedback','templates'].forEach(k=>{ if(typeof data[k] === 'string') out.outputs[k]=data[k]; });
+  return out;
+}
+function applyState(raw, opts={}){
+  const data = normalizeImportedState(raw || {});
+  if(data.fields?.customCurriculum){
+    try{ curriculum = mergeDeep(curriculum, JSON.parse(data.fields.customCurriculum)); }catch{}
+  }
+  populateContextSelectors();
+  Object.entries(data.fields||{}).forEach(([k,v])=>{ if($(k)) $(k).value = v; });
+  // Recarreguem perquè el curs i la matèria importats generin els desplegables correctes.
+  populateContextSelectors();
+  Object.entries(data.multi||{}).forEach(([k,values])=>{
+    if($(k)){
+      const set=new Set(Array.isArray(values) ? values : []);
+      Array.from($(k).options).forEach(o=>o.selected=set.has(o.value));
+    }
+  });
+  updateCriteriaFromCompetencies(true);
+  // Reapliquem CA després del filtratge CE -> CA, perquè si no es poden perdre els CA seleccionats.
+  if(data.multi?.caSelect && $('caSelect')){
+    const set=new Set(data.multi.caSelect);
+    Array.from($('caSelect').options).forEach(o=>o.selected=set.has(o.value));
+  }
+  populateSelect($('sabersSelect'), currentData().sabers || [], true);
+  if(data.multi?.sabersSelect && $('sabersSelect')){
+    const set=new Set(data.multi.sabersSelect);
+    Array.from($('sabersSelect').options).forEach(o=>o.selected=set.has(o.value));
+  }
+  Object.entries(data.outputs||{}).forEach(([k,v])=>{ if(outputs[k]) outputs[k].textContent = v || 'Encara no hi ha contingut generat.'; });
+  renderTemplatePreview();
+  renderExerciseBank();
+  updateSummary();
+  if(!opts.silent){ toast('Projecte JSON carregat als menús'); }
+  return data;
+}
 function save(){ const data=collectState(); localStorage.setItem(storeKey,JSON.stringify(data)); updateSummary(); toast('Desat al navegador'); }
-function load(){ try{ const data=JSON.parse(localStorage.getItem(storeKey)||'{}'); if(data.fields?.customCurriculum){ try{ curriculum = mergeDeep(curriculum, JSON.parse(data.fields.customCurriculum)); }catch{} } populateContextSelectors(); Object.entries(data.fields||{}).forEach(([k,v])=>{if($(k)) $(k).value=v}); populateContextSelectors(); Object.entries(data.multi||{}).forEach(([k,values])=>{if($(k)){ const set=new Set(values); Array.from($(k).options).forEach(o=>o.selected=set.has(o.value)); }}); queueMicrotask(()=>Object.entries(data.outputs||{}).forEach(([k,v])=>{if(outputs[k]) outputs[k].textContent=v})); }catch{ populateContextSelectors(); } }
+function load(){ try{ applyState(JSON.parse(localStorage.getItem(storeKey)||'{}'), {silent:true}); }catch{ populateContextSelectors(); } }
 function generate(key){ const text = clean(generators[key]()); outputs[key].textContent=text; save(); updateSummary(); }
 function copyText(text){ navigator.clipboard?.writeText(text).then(()=>toast('Copiat')); }
 function downloadText(filename,text){ const blob=new Blob([text],{type:'text/plain;charset=utf-8'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=filename; a.click(); URL.revokeObjectURL(a.href); }
@@ -660,8 +717,30 @@ function updateSummary(){
 }
 function openModal(id){ const modal=$(id); if(!modal) return; modal.hidden=false; document.body.classList.add('modal-open'); const focusable=modal.querySelector('input,select,textarea,button'); focusable?.focus(); }
 function closeModal(modal){ if(!modal) return; modal.hidden=true; document.body.classList.remove('modal-open'); updateSummary(); }
-function exportStateJson(){ const blob=new Blob([JSON.stringify(collectState(), null, 2)],{type:'application/json;charset=utf-8'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`docentcat-projecte-${dateSlug()}.json`; a.click(); URL.revokeObjectURL(a.href); }
-function importStateJson(file){ if(!file) return; const reader=new FileReader(); reader.onload=()=>{ try{ const data=JSON.parse(reader.result); localStorage.setItem(storeKey, JSON.stringify(data)); toast('Projecte JSON importat'); setTimeout(()=>location.reload(),500); }catch{ toast('JSON de projecte no vàlid'); } }; reader.readAsText(file); }
+function exportStateJson(){
+  const blob=new Blob([JSON.stringify(collectState(), null, 2)],{type:'application/json;charset=utf-8'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`docentcat-projecte-${dateSlug()}.json`; a.click(); URL.revokeObjectURL(a.href);
+}
+function importStateJson(file){
+  if(!file) return;
+  const reader=new FileReader();
+  reader.onload=()=>{
+    try{
+      const imported = JSON.parse(reader.result);
+      const normalized = applyState(imported);
+      localStorage.setItem(storeKey, JSON.stringify(normalized));
+      save();
+      toast('Projecte JSON importat i aplicat');
+      if($('importStatus')) $('importStatus').textContent = 'Projecte carregat correctament als menús i a les sortides generades.';
+    }catch(err){
+      console.error(err);
+      toast('JSON de projecte no vàlid o incompatible');
+      if($('importStatus')) $('importStatus').textContent = 'No s’ha pogut carregar el JSON. Comprova que sigui un projecte DocentCat exportat.';
+    }
+    if($('importStateFile')) $('importStateFile').value = '';
+  };
+  reader.readAsText(file);
+}
 for(const btn of document.querySelectorAll('[data-open-modal]')) btn.addEventListener('click',()=>{ openModal(btn.dataset.openModal); if(btn.dataset.openModal === 'modal-worksheets'){ renderExerciseBank(); setTimeout(renderExerciseBank, 150); } });
 for(const btn of document.querySelectorAll('[data-close-modal]')) btn.addEventListener('click',()=>closeModal(btn.closest('.modal')));
 for(const modal of document.querySelectorAll('.modal')) modal.addEventListener('click',e=>{ if(e.target===modal) closeModal(modal); });

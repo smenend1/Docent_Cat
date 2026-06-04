@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="theme-color" content="#253b80" />
-  <title>DocentCat v12.2 · Exportacions clares</title>
+  <title>DocentCat v12.3 · Exportacions clares</title>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="stylesheet" href="styles.css" />
 </head>
@@ -12,8 +12,8 @@
   <header class="app-header compact-header">
     <div>
       <p class="eyebrow">PWA per a docents de secundària · Catalunya</p>
-      <h1>DocentCat <span class="version-badge">v12.2</span></h1>
-      <p class="subtitle">Panell compacte amb botons quadrats. Versió v12.2 amb selector d’exercicis STEM i exportació/importació més visible per document i per projecte.</p>
+      <h1>DocentCat <span class="version-badge">v12.3</span></h1>
+      <p class="subtitle">Panell compacte amb botons quadrats. Versió v12.3 amb selector d’exercicis STEM i importació JSON corregida: el projecte es carrega directament als menús.</p>
     </div>
     <div class="header-actions">
       <button id="installBtn" class="ghost" hidden>Instal·la</button>
@@ -54,7 +54,7 @@
         <div><strong>Matèria</strong><span id="summarySubject">—</span></div>
         <div><strong>Tema</strong><span id="summaryTopic">—</span></div>
       </div>
-      <p class="hint">Versió carregada: v12.2. Els resultats són editables dins de cada finestra abans de copiar, baixar, exportar o imprimir.</p>
+      <p class="hint">Versió carregada: v12.3. Els resultats són editables i el JSON de projecte es pot importar per recuperar menús, currículum i sortides.</p>
     </section>
   </main>
 
@@ -216,6 +216,7 @@
       <div class="export-grid">
         <button id="exportStateBtn" class="square-action">Exporta projecte JSON</button>
         <label class="square-action file-action">Importa projecte JSON<input id="importStateFile" type="file" accept="application/json,.json" hidden></label>
+        <p id="importStatus" class="hint full-row">En importar, es reomplen els menús, el currículum seleccionat i les sortides generades sense recarregar la pàgina.</p>
       </div>
       <div class="modal-actions"><button class="primary" data-close-modal>Accepta i torna</button></div>
     </div>

@@ -1,4 +1,4 @@
-const CACHE = 'docentcat-v12.2-export-clear';
+const CACHE = 'docentcat-v12.3-export-clear';
 const ASSETS = [
   './styles.css','./app.js','./manifest.webmanifest','./curriculum-data.js','./data/curriculum-data.js','./exercise-bank.js','./data/exercise-bank.js','./icons/icon-192.png','./icons/icon-512.png'
 ];
@@ -25,4 +25,4 @@ self.addEventListener('fetch', event => {
   })));
 });
 
-// DocentCat v12.2 export/import clarity + cache cleanup
+// DocentCat v12.3 export/import clarity + cache cleanup

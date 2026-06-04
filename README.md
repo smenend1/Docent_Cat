@@ -1,8 +1,8 @@
-# DocentCat PWA v12.2 · Exportacions clares
+# DocentCat PWA v12.3 · Exportacions clares
 
 Versió per GitHub Pages amb panell compacte, currículum STEM i un banc local d’exercicis per matèria, curs i tema curricular.
 
-## Novetats v12.2
+## Novetats v12.3
 
 - Nou fitxer `exercise-bank.js` amb 89 temes STEM i 356 exercicis tipus originals.
 - Matèries cobertes: Matemàtiques, Matemàtiques A, Matemàtiques B, Tecnologia i Digitalització, Tecnologia, Digitalització, Biologia i Geologia, Física i Química.
@@ -30,3 +30,8 @@ Puja tots els fitxers a GitHub Pages i obre la web amb:
 ```text
 https://smenend1.github.io/DocentCat/?v=12.2
 ```
+
+
+## v12.3
+
+Corregeix la importació de projectes JSON: ara el fitxer importat s’aplica directament als menús, a les seleccions curriculars i a les sortides generades, i també es desa al navegador.
