@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="theme-color" content="#253b80" />
-  <title>DocentCat v12 · Selector d’exercicis STEM</title>
+  <title>DocentCat v12.1 · Selector d’exercicis STEM</title>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="stylesheet" href="styles.css" />
 </head>
@@ -143,15 +143,15 @@
         <div class="exercise-picker-head">
           <div>
             <h3 id="exercisePickerTitle">Banc d’exercicis STEM</h3>
-            <p id="exercisePickerHint">Actualitza el llistat després de triar curs, matèria, sabers i tema. Després marca els exercicis que vols incloure a la fitxa.</p>
+            <p id="exercisePickerHint">Primer prem “1. Cerca exercicis del banc”. Després marca/desmarca els exercicis que vols incloure a la fitxa.</p>
           </div>
           <div class="exercise-picker-actions">
-            <button id="refreshExercisesBtn" type="button" class="ghost">Actualitza exercicis</button>
-            <button id="selectSuggestedExercisesBtn" type="button" class="ghost">Marca suggerits</button>
-            <button id="clearSelectedExercisesBtn" type="button" class="ghost danger">Desmarca</button>
+            <button id="refreshExercisesBtn" type="button" class="ghost">1. Cerca exercicis del banc</button>
+            <button id="selectSuggestedExercisesBtn" type="button" class="ghost">2. Marca suggerits</button>
+            <button id="clearSelectedExercisesBtn" type="button" class="ghost danger">Desmarca selecció</button>
           </div>
         </div>
-        <div id="exerciseBankList" class="exercise-bank-list">Encara no has actualitzat el banc d’exercicis.</div>
+        <div id="exerciseBankList" class="exercise-bank-list">Prem “1. Cerca exercicis del banc” per carregar exercicis segons curs, matèria, tema i sabers.</div>
       </section>
       <div class="modal-actions"><button data-generate="worksheets" class="primary">Genera fitxa amb els exercicis marcats</button><button class="ghost dark" data-close-modal>Accepta i torna</button></div>
       <output-card data-output="worksheets"></output-card>

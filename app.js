@@ -1,5 +1,5 @@
 const $ = (id) => document.getElementById(id);
-const storeKey = 'docentcat-pwa-v12-exercise-selector';
+const storeKey = 'docentcat-pwa-v12.1-exercise-selector';
 const fields = ['stage','subject','level','templateType','topic','taskDescription','duration','groupProfile','language','saProduct','saContext','saMethod','saAssessment','sessionCount','sessionMinutes','sessionFocus','worksheetType','worksheetLevel','activityCount','rubricTask','rubricScale','rubricCriteria','studentWork','improvementGoal','feedbackTone','feedbackDetail','customCurriculum'];
 const multiFields = ['ceSelect','caSelect','sabersSelect'];
 const outputs = {};
@@ -51,7 +51,7 @@ function pickedCurriculum(){
   const availableCa = criteriaForSelectedCompetencies(data);
   return {
     ce: selectedCe.length ? selectedCe : (data.ce || []).slice(0,2),
-    // v12: si hi ha diverses CE seleccionades i l'usuari no marca manualment els CA,
+    // v12.1: si hi ha diverses CE seleccionades i l'usuari no marca manualment els CA,
     // no retallem als primers 3 criteris, perquè això feia aparèixer només CA1.x.
     // En aquest cas s'inclouen tots els CA vinculats a les CE triades.
     ca: selectedCa.length ? uniqueList(selectedCa) : (selectedCe.length ? uniqueList(availableCa) : uniqueList(availableCa).slice(0,3)),
@@ -352,6 +352,35 @@ function hashCode(str){
   for(let i=0;i<str.length;i++){ h=((h<<5)-h)+str.charCodeAt(i); h|=0; }
   return Math.abs(h).toString(36);
 }
+
+function fallbackExerciseObjects(c){
+  const bank = ((window.DOCENTCAT_EXERCISE_BANK || {}).ESO || {});
+  const targetSubject = normText(c.materia);
+  const rows = [];
+  for(const [course, subjects] of Object.entries(bank)){
+    for(const [subject, themes] of Object.entries(subjects || {})){
+      const ns = normText(subject);
+      if(targetSubject && !(ns.includes(targetSubject) || targetSubject.includes(ns))) continue;
+      (themes || []).forEach((t, themeIndex) => {
+        const score = scoreTheme(t,c) + (course === c.curs ? 5 : 0);
+        (t.exercises || []).forEach((ex, exerciseIndex) => {
+          const base = normText(`${course}|${subject}|${t.theme}|${exerciseIndex}|${ex.statement}`);
+          rows.push({
+            id: `fb-${themeIndex}-${exerciseIndex}-${hashCode(base)}`,
+            theme: `${t.theme}${course !== c.curs ? ` · ${course}` : ''}`,
+            type: ex.type || 'activitat',
+            level: ex.level || 'estàndard',
+            statement: ex.statement,
+            solutionHint: ex.solutionHint || '',
+            score
+          });
+        });
+      });
+    }
+  }
+  return rows.sort((a,b)=>b.score-a.score);
+}
+
 function selectedExerciseLines(){
   const boxes = Array.from(document.querySelectorAll('#exerciseBankList input[type="checkbox"]:checked'));
   if(!boxes.length) return null;
@@ -367,12 +396,17 @@ function renderExerciseBank(){
   const hint = $('exercisePickerHint');
   if(!list) return;
   const c = context();
-  const rows = bankExerciseObjects(c);
-  const max = Math.max(12, Math.min(60, (Number(get('activityCount')) || 8) * 4));
+  list.innerHTML = '<div class="exercise-empty">Cercant exercicis del banc...</div>';
+  if(hint) hint.textContent = `Cercant exercicis per a ${c.curs || 'curs no indicat'} · ${c.materia || 'matèria no indicada'} · ${c.tema || 'tema no indicat'}...`;
+  let rows = bankExerciseObjects(c);
+  // v12.1: si no hi ha coincidència exacta per curs/matèria, fem una cerca més permissiva per matèria en tots els cursos.
+  if(!rows.length) rows = fallbackExerciseObjects(c);
+  const max = Math.max(12, Math.min(80, (Number(get('activityCount')) || 8) * 5));
   const visible = rows.slice(0, max);
   if(!visible.length){
-    list.innerHTML = '<div class="exercise-empty">No he trobat exercicis del banc per a aquesta combinació. Revisa curs, matèria i tema, o escriu una consigna més concreta.</div>';
-    if(hint) hint.textContent = 'No hi ha coincidències del banc per aquesta selecció.';
+    const hasBank = !!(window.DOCENTCAT_EXERCISE_BANK && window.DOCENTCAT_EXERCISE_BANK.ESO);
+    list.innerHTML = `<div class="exercise-empty"><strong>No he trobat exercicis per aquesta selecció.</strong><br>Comprova que has triat curs i matèria. Estat del banc: ${hasBank ? 'carregat' : 'NO carregat'}.<br>Selecció actual: ${c.curs || '—'} · ${c.materia || '—'} · ${c.tema || '—'}</div>`;
+    if(hint) hint.textContent = 'Cap exercici visible. Pots generar una fitxa automàtica o canviar curs/matèria/tema.';
     return;
   }
   const byTheme = new Map();
@@ -610,7 +644,7 @@ function openModal(id){ const modal=$(id); if(!modal) return; modal.hidden=false
 function closeModal(modal){ if(!modal) return; modal.hidden=true; document.body.classList.remove('modal-open'); updateSummary(); }
 function exportStateJson(){ const blob=new Blob([JSON.stringify(collectState(), null, 2)],{type:'application/json;charset=utf-8'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`docentcat-projecte-${dateSlug()}.json`; a.click(); URL.revokeObjectURL(a.href); }
 function importStateJson(file){ if(!file) return; const reader=new FileReader(); reader.onload=()=>{ try{ const data=JSON.parse(reader.result); localStorage.setItem(storeKey, JSON.stringify(data)); toast('Projecte JSON importat'); setTimeout(()=>location.reload(),500); }catch{ toast('JSON de projecte no vàlid'); } }; reader.readAsText(file); }
-for(const btn of document.querySelectorAll('[data-open-modal]')) btn.addEventListener('click',()=>{ openModal(btn.dataset.openModal); if(btn.dataset.openModal === 'modal-worksheets') renderExerciseBank(); });
+for(const btn of document.querySelectorAll('[data-open-modal]')) btn.addEventListener('click',()=>{ openModal(btn.dataset.openModal); if(btn.dataset.openModal === 'modal-worksheets'){ renderExerciseBank(); setTimeout(renderExerciseBank, 150); } });
 for(const btn of document.querySelectorAll('[data-close-modal]')) btn.addEventListener('click',()=>closeModal(btn.closest('.modal')));
 for(const modal of document.querySelectorAll('.modal')) modal.addEventListener('click',e=>{ if(e.target===modal) closeModal(modal); });
 window.addEventListener('keydown',e=>{ if(e.key==='Escape'){ const open=document.querySelector('.modal:not([hidden])'); if(open) closeModal(open); }});
@@ -618,10 +652,17 @@ $('exportAllBtnMirror')?.addEventListener('click',()=>$('exportAllBtn')?.click()
 $('fullPackBtnMirror')?.addEventListener('click',()=>$('fullPackBtn')?.click());
 $('exportStateBtn')?.addEventListener('click',exportStateJson);
 $('importStateFile')?.addEventListener('change',e=>importStateJson(e.target.files?.[0]));
-$('refreshExercisesBtn')?.addEventListener('click',renderExerciseBank);
-$('selectSuggestedExercisesBtn')?.addEventListener('click',selectSuggestedExercises);
-$('clearSelectedExercisesBtn')?.addEventListener('click',clearSelectedExercises);
+function bindAction(id, fn){
+  const el = $(id);
+  if(!el) return;
+  el.addEventListener('click', (e)=>{ e.preventDefault(); fn(); });
+  el.addEventListener('touchend', (e)=>{ e.preventDefault(); fn(); }, {passive:false});
+}
+bindAction('refreshExercisesBtn', renderExerciseBank);
+bindAction('selectSuggestedExercisesBtn', selectSuggestedExercises);
+bindAction('clearSelectedExercisesBtn', clearSelectedExercises);
 $('activityCount')?.addEventListener('change',renderExerciseBank);
+window.DocentCat = { renderExerciseBank, selectSuggestedExercises, clearSelectedExercises };
 
 let deferredPrompt; window.addEventListener('beforeinstallprompt', e=>{ e.preventDefault(); deferredPrompt=e; $('installBtn').hidden=false; });
 $('installBtn').onclick=async()=>{ if(deferredPrompt){ deferredPrompt.prompt(); await deferredPrompt.userChoice; deferredPrompt=null; $('installBtn').hidden=true; }};
